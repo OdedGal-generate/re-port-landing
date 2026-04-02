@@ -79,7 +79,7 @@ export default function Hero() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="hidden lg:flex items-center justify-center min-w-0 overflow-hidden"
+            className="flex items-center justify-center min-w-0 overflow-hidden px-4 lg:px-0"
           >
             <motion.div
               animate={{ y: [-6, 6, -6] }}
