@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/letter-logo.png",
+        url: "https://re-port-landing.vercel.app/images/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Re-PORT — Insurtech Gateway",
