@@ -18,6 +18,14 @@ export const metadata: Metadata = {
       "הורדת דוחות שנתיים אוטומטית מכל חברות הביטוח ובתי ההשקעות",
     locale: "he_IL",
     type: "website",
+    images: [
+      {
+        url: "/images/letter-logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Re-PORT — Insurtech Gateway",
+      },
+    ],
   },
 };
 
