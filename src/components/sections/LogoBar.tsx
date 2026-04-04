@@ -7,7 +7,7 @@ const companies = [
   { name: "הראל", file: "harel.png" },
   { name: "כלל", file: "clal.png" },
   { name: "פניקס", file: "phoenix.png" },
-  { name: "מנורה", file: "menora.jpg" },
+  { name: "מנורה", file: "menora.png" },
   { name: "הכשרה", file: "hachshara.png" },
   { name: "איילון", file: "ayalon.png" },
   { name: "אלטשולר שחם", file: "altshuler-shaham.png" },
