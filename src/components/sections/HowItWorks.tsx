@@ -26,21 +26,20 @@ const steps = [
   },
 ];
 
-function CurvedArrow({ flip }: { flip?: boolean }) {
+function Arrow() {
   return (
     <svg
-      className={`w-20 h-14 text-turquoise-500 ${flip ? "scale-x-[-1]" : ""}`}
-      viewBox="0 0 80 50"
+      className="w-16 h-10 text-turquoise-500"
+      viewBox="0 0 64 40"
       fill="none"
     >
       <path
-        d="M5 40 C 20 40, 25 8, 40 8 S 60 40, 75 8"
+        d="M58 20 L6 20"
         stroke="currentColor"
-        strokeWidth="2.5"
+        strokeWidth="4"
         strokeLinecap="round"
-        fill="none"
       />
-      <polygon points="70,2 78,8 70,14" fill="currentColor" />
+      <polygon points="10,10 0,20 10,30" fill="currentColor" />
     </svg>
   );
 }
@@ -91,8 +90,8 @@ export default function HowItWorks() {
 
                 {/* Arrow between cards (not after last) */}
                 {i < steps.length - 1 && (
-                  <div className="flex items-center pt-32">
-                    <CurvedArrow />
+                  <div className="flex items-center pt-24">
+                    <Arrow />
                   </div>
                 )}
               </div>
