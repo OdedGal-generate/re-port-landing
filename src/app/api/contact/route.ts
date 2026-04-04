@@ -19,22 +19,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "שם סוכנות לא תקין" }, { status: 400 });
     }
 
-    // Send to n8n webhook (fire-and-forget — don't block user)
+    // Send to n8n webhook
     if (N8N_WEBHOOK_URL) {
-      fetch(N8N_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          name: name.trim(),
-          phone: phone.replace(/-/g, ""),
-          agency: agency.trim(),
-          clients: clients || "50-100",
-          status: "חדש",
-        }),
-      }).catch(() => {
-        // Silently fail — don't break user flow
-      });
+      try {
+        await fetch(N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            timestamp: new Date().toISOString(),
+            name: name.trim(),
+            phone: phone.replace(/-/g, ""),
+            agency: agency.trim(),
+            clients: clients || "50-100",
+            status: "חדש",
+          }),
+        });
+      } catch {
+        // Don't break user flow if webhook fails
+      }
     }
 
     // Build WhatsApp deep link
