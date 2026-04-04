@@ -103,9 +103,9 @@ function SavingsCalculator() {
           animate={{ scale: 1 }}
           className="bg-turquoise-500/10 border border-turquoise-500/30 rounded-xl p-6 text-center"
         >
-          <div className="text-turquoise-300 text-sm mb-2">חיסכון נטו</div>
+          <div className="text-turquoise-300 text-sm mb-2">עלות שעות עבודה</div>
           <div className="text-2xl font-bold text-turquoise-400">
-            ₪{Math.round(netSaving).toLocaleString()}
+            ₪{Math.round(moneySaved).toLocaleString()}
           </div>
         </motion.div>
       </div>

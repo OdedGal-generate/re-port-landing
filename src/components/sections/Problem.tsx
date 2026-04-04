@@ -5,9 +5,9 @@ import CountUp from "../animations/CountUp";
 
 const stats = [
   {
-    number: 15,
-    suffix: " דקות",
-    label: "זמן ממוצע להורדת דוח לקוח אחד ידנית",
+    number: 12,
+    suffix: "+ דקות",
+    label: "זמן ממוצע להורדה, שליחה ותיוק האישורי מס ללקוח",
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -52,7 +52,7 @@ export default function Problem() {
               הבעיה שכולם מכירים
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              כל שנה אותו סיפור — לקוחות שרוצים דוחות, חברות ביטוח שכל אחת עם מערכת אחרת, והזמן שלכם נגמר.
+              כל שנה אותו סיפור — לקוחות מתקשרים ורוצים לקבל את הדוחות, חברות ביטוח שכל אחת עם מערכת אחרת, והזמן שלכם נגמר.
             </p>
           </div>
         </RevealOnScroll>
