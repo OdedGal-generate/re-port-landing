@@ -191,6 +191,10 @@ export default function Pricing() {
           ))}
         </div>
 
+        <p className="text-center text-gray-400 text-sm mt-4">
+          *המחיר בתוספת מע&quot;מ
+        </p>
+
         <RevealOnScroll delay={0.3}>
           <SavingsCalculator />
         </RevealOnScroll>
