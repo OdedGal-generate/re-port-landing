@@ -40,7 +40,7 @@ function SavingsCalculator() {
 
   const pricePerClient = clients >= 200 ? 10 : 12.5;
   const totalCost = clients * pricePerClient;
-  const timeSavedMinutes = clients * 12.5;
+  const timeSavedMinutes = clients * 15;
   const timeSavedHours = timeSavedMinutes / 60;
   const moneySaved = timeSavedHours * 100;
   const netSaving = moneySaved - totalCost;
