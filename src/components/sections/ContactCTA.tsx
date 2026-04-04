@@ -94,7 +94,7 @@ export default function ContactCTA() {
               נחזור אליכם בהקדם. אם WhatsApp לא נפתח, לחצו על הכפתור:
             </p>
             <Button
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              href={`https://wa.me/${WHATSAPP_FALLBACK}`}
               size="lg"
             >
               פתחו WhatsApp
