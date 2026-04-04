@@ -26,19 +26,6 @@ body {
   font-family: var(--font-heebo), "Heebo", Arial, sans-serif;
 }
 
-/* Logo marquee animation - RTL: scroll right to left means positive translateX */
-@keyframes marquee-rtl {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(50%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee-rtl 40s linear infinite;
-}
 
 /* Gradient text utility */
 .text-gradient {
