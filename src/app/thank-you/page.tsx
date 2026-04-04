@@ -27,7 +27,7 @@ export default function ThankYou() {
         </p>
 
         <div className="space-y-4">
-          <Button href="https://wa.me/972500000000" size="lg" className="w-full">
+          <Button href="https://wa.me/972537037531" size="lg" className="w-full">
             פתחו WhatsApp
           </Button>
           <Button href="/" variant="outline" size="md" className="w-full">

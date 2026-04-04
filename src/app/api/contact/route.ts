@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER || "972500000000";
+const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER || "972537037531";
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
 
 export async function POST(request: Request) {

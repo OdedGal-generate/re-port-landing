@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import RevealOnScroll from "../animations/RevealOnScroll";
 import Button from "../ui/Button";
 
-const WHATSAPP_FALLBACK = "972500000000";
+const WHATSAPP_FALLBACK = "972537037531";
 
 export default function ContactCTA() {
   const [form, setForm] = useState({
