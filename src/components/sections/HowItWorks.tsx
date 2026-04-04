@@ -29,17 +29,11 @@ const steps = [
 function Arrow() {
   return (
     <svg
-      className="w-16 h-10 text-turquoise-500"
-      viewBox="0 0 64 40"
-      fill="none"
+      className="w-12 h-12 text-turquoise-400 drop-shadow-md"
+      viewBox="0 0 100 100"
+      fill="currentColor"
     >
-      <path
-        d="M58 20 L6 20"
-        stroke="currentColor"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-      <polygon points="10,10 0,20 10,30" fill="currentColor" />
+      <polygon points="40,5 40,35 100,35 100,65 40,65 40,95 0,50" />
     </svg>
   );
 }
