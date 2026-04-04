@@ -5,8 +5,7 @@ import { motion } from "framer-motion";
 import RevealOnScroll from "../animations/RevealOnScroll";
 import Button from "../ui/Button";
 
-// Placeholder - Oded will provide his WhatsApp number
-const WHATSAPP_NUMBER = "972500000000";
+const WHATSAPP_FALLBACK = "972500000000";
 
 export default function ContactCTA() {
   const [form, setForm] = useState({
@@ -17,6 +16,7 @@ export default function ContactCTA() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -27,19 +27,34 @@ export default function ContactCTA() {
     return errs;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
-    const message = encodeURIComponent(
-      `שלום, אני ${form.name} מסוכנות ${form.agency}.\nטלפון: ${form.phone}\nמספר לקוחות משוער: ${form.clients}\nאשמח לפרטים נוספים על Re-PORT.`
-    );
-    const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+    setSubmitting(true);
 
-    setSubmitted(true);
-    window.open(waLink, "_blank");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+
+      setSubmitted(true);
+      window.open(data.whatsappUrl || `https://wa.me/${WHATSAPP_FALLBACK}`, "_blank");
+    } catch {
+      // Fallback: open WhatsApp directly if API fails
+      const message = encodeURIComponent(
+        `שלום, אני ${form.name} מסוכנות ${form.agency}.\nטלפון: ${form.phone}\nמספר לקוחות משוער: ${form.clients}\nאשמח לפרטים נוספים על Re-PORT.`
+      );
+      setSubmitted(true);
+      window.open(`https://wa.me/${WHATSAPP_FALLBACK}?text=${message}`, "_blank");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -233,8 +248,8 @@ export default function ContactCTA() {
                   </select>
                 </div>
 
-                <Button type="submit" size="lg" className="w-full mt-2">
-                  שלחו פרטים והתחילו
+                <Button type="submit" size="lg" className="w-full mt-2" disabled={submitting}>
+                  {submitting ? "שולח..." : "שלחו פרטים והתחילו"}
                 </Button>
 
                 <p className="text-gray-500 text-xs text-center">
