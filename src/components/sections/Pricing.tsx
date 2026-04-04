@@ -192,7 +192,7 @@ export default function Pricing() {
         </div>
 
         <p className="text-center text-gray-500 text-base mt-4">
-          *המחיר בתוספת מע&quot;מ
+          *המחירים בתוספת מע&quot;מ
         </p>
 
         <RevealOnScroll delay={0.3}>
