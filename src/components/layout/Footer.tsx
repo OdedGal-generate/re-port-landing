@@ -15,7 +15,7 @@ export default function Footer() {
             <p className="text-gray-400 text-sm leading-relaxed">
               Re-PORT — Insurtech Gateway
               <br />
-              הורדת דוחות שנתיים אוטומטית לסוכני ביטוח בישראל.
+              הורדת דוחות אוטומטית לסוכני ביטוח בישראל.
             </p>
           </div>
 
