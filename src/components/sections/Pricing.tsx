@@ -39,13 +39,14 @@ function SavingsCalculator() {
   const [clients, setClients] = useState(100);
   const [reportsPerClient, setReportsPerClient] = useState(3);
   const [minutesPerClient, setMinutesPerClient] = useState(20);
+  const [hourlyRate, setHourlyRate] = useState(100);
 
   const totalReports = clients * reportsPerClient;
   const pricePerReport = totalReports > 600 ? 4 : 5;
   const totalCost = totalReports * pricePerReport;
   const timeSavedMinutes = clients * minutesPerClient;
   const timeSavedHours = timeSavedMinutes / 60;
-  const laborCost = timeSavedHours * 100;
+  const laborCost = timeSavedHours * hourlyRate;
 
   return (
     <div className="bg-navy-950 rounded-2xl p-8 sm:p-10 mt-12">
@@ -117,6 +118,28 @@ function SavingsCalculator() {
               {minutesPerClient}
             </span>
             <span className="text-gray-400 text-sm me-2"> דקות ללקוח</span>
+          </div>
+        </div>
+
+        {/* Hourly rate slider */}
+        <div>
+          <label className="block text-gray-400 text-sm mb-2 text-center">
+            עלות שכר מעביד לשעת עבודה
+          </label>
+          <input
+            type="range"
+            min={50}
+            max={200}
+            step={10}
+            value={hourlyRate}
+            onChange={(e) => setHourlyRate(Number(e.target.value))}
+            className="w-full h-2 bg-navy-800 rounded-lg appearance-none cursor-pointer accent-turquoise-500"
+          />
+          <div className="text-center mt-2">
+            <span className="text-3xl font-black text-turquoise-400">
+              {hourlyRate}
+            </span>
+            <span className="text-gray-400 text-sm me-2"> ₪ לשעה</span>
           </div>
         </div>
       </div>
