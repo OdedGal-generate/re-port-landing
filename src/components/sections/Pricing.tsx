@@ -152,7 +152,7 @@ function SavingsCalculator() {
           className="bg-white/5 rounded-xl p-6 text-center"
         >
           <div className="text-gray-400 text-sm mb-2">
-            עלות Re-PORT ({totalReports.toLocaleString()} דוחות × {pricePerReport}₪)
+            עלות Re-PORT ({totalReports.toLocaleString()} דוחות × ₪{pricePerReport})
           </div>
           <div className="text-2xl font-bold text-white">
             ₪{totalCost.toLocaleString()}
