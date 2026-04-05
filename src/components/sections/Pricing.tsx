@@ -8,11 +8,11 @@ import Button from "../ui/Button";
 const tiers = [
   {
     name: "סטנדרטי",
-    price: "12.50",
-    unit: '₪ לכל מספר ת"ז',
+    price: "5",
+    unit: "₪ לכל דוח",
     description: "מתאים לסוכנים עצמאיים וסוכנויות קטנות",
     features: [
-      "בנקים של 50 מספרי ת\"ז",
+      "בנקים של 100 דוחות",
       "הורדה מכל חברות הביטוח",
       "שמירת פרטי התחברות",
       "תמיכה טכנית",
@@ -21,15 +21,15 @@ const tiers = [
   },
   {
     name: "מקצועי",
-    price: "10",
-    unit: '₪ לכל מספר ת"ז',
-    description: "לסוכנויות עם 200+ לקוחות",
+    price: "4",
+    unit: "₪ לכל דוח",
+    description: "לסוכנויות עם 600+ דוחות",
     features: [
-      'מ-200 מספרי ת"ז ומעלה',
+      "מ-600 דוחות ומעלה",
       "הורדה מכל חברות הביטוח",
       "שמירת פרטי התחברות",
       "תמיכה טכנית בעדיפות",
-      "חיסכון של 20% למספר ת\"ז",
+      "חיסכון של 20% לכל דוח",
     ],
     recommended: true,
   },
@@ -37,13 +37,15 @@ const tiers = [
 
 function SavingsCalculator() {
   const [clients, setClients] = useState(100);
+  const [reportsPerClient, setReportsPerClient] = useState(3);
+  const [minutesPerClient, setMinutesPerClient] = useState(20);
 
-  const pricePerClient = clients >= 200 ? 10 : 12.5;
-  const totalCost = clients * pricePerClient;
-  const timeSavedMinutes = clients * 15;
+  const totalReports = clients * reportsPerClient;
+  const pricePerReport = totalReports > 600 ? 4 : 5;
+  const totalCost = totalReports * pricePerReport;
+  const timeSavedMinutes = clients * minutesPerClient;
   const timeSavedHours = timeSavedMinutes / 60;
-  const moneySaved = timeSavedHours * 100;
-  const netSaving = moneySaved - totalCost;
+  const laborCost = timeSavedHours * 100;
 
   return (
     <div className="bg-navy-950 rounded-2xl p-8 sm:p-10 mt-12">
@@ -51,24 +53,71 @@ function SavingsCalculator() {
         כמה תחסכו? בדקו בעצמכם
       </h3>
 
-      <div className="max-w-md mx-auto mb-8">
-        <label className="block text-gray-400 text-sm mb-2 text-center">
-          כמה לקוחות יש לכם?
-        </label>
-        <input
-          type="range"
-          min={50}
-          max={1000}
-          step={10}
-          value={clients}
-          onChange={(e) => setClients(Number(e.target.value))}
-          className="w-full h-2 bg-navy-800 rounded-lg appearance-none cursor-pointer accent-turquoise-500"
-        />
-        <div className="text-center mt-2">
-          <span className="text-3xl font-black text-turquoise-400">
-            {clients}
-          </span>
-          <span className="text-gray-400 text-sm me-2"> לקוחות</span>
+      <div className="max-w-xl mx-auto mb-8 space-y-6">
+        {/* Clients slider */}
+        <div>
+          <label className="block text-gray-400 text-sm mb-2 text-center">
+            כמה לקוחות יש לכם?
+          </label>
+          <input
+            type="range"
+            min={50}
+            max={1000}
+            step={10}
+            value={clients}
+            onChange={(e) => setClients(Number(e.target.value))}
+            className="w-full h-2 bg-navy-800 rounded-lg appearance-none cursor-pointer accent-turquoise-500"
+          />
+          <div className="text-center mt-2">
+            <span className="text-3xl font-black text-turquoise-400">
+              {clients}
+            </span>
+            <span className="text-gray-400 text-sm me-2"> לקוחות</span>
+          </div>
+        </div>
+
+        {/* Reports per client slider */}
+        <div>
+          <label className="block text-gray-400 text-sm mb-2 text-center">
+            כמה דוחות בממוצע לכל לקוח?
+          </label>
+          <input
+            type="range"
+            min={1}
+            max={6}
+            step={1}
+            value={reportsPerClient}
+            onChange={(e) => setReportsPerClient(Number(e.target.value))}
+            className="w-full h-2 bg-navy-800 rounded-lg appearance-none cursor-pointer accent-turquoise-500"
+          />
+          <div className="text-center mt-2">
+            <span className="text-3xl font-black text-turquoise-400">
+              {reportsPerClient}
+            </span>
+            <span className="text-gray-400 text-sm me-2"> דוחות ללקוח</span>
+          </div>
+        </div>
+
+        {/* Minutes per client slider */}
+        <div>
+          <label className="block text-gray-400 text-sm mb-2 text-center">
+            כמה דקות לוקח לכם להוריד, לשלוח ולתייק ידנית?
+          </label>
+          <input
+            type="range"
+            min={5}
+            max={30}
+            step={1}
+            value={minutesPerClient}
+            onChange={(e) => setMinutesPerClient(Number(e.target.value))}
+            className="w-full h-2 bg-navy-800 rounded-lg appearance-none cursor-pointer accent-turquoise-500"
+          />
+          <div className="text-center mt-2">
+            <span className="text-3xl font-black text-turquoise-400">
+              {minutesPerClient}
+            </span>
+            <span className="text-gray-400 text-sm me-2"> דקות ללקוח</span>
+          </div>
         </div>
       </div>
 
@@ -79,7 +128,9 @@ function SavingsCalculator() {
           animate={{ scale: 1 }}
           className="bg-white/5 rounded-xl p-6 text-center"
         >
-          <div className="text-gray-400 text-sm mb-2">עלות Re-PORT</div>
+          <div className="text-gray-400 text-sm mb-2">
+            עלות Re-PORT ({totalReports.toLocaleString()} דוחות × {pricePerReport}₪)
+          </div>
           <div className="text-2xl font-bold text-white">
             ₪{totalCost.toLocaleString()}
           </div>
@@ -98,14 +149,14 @@ function SavingsCalculator() {
         </motion.div>
 
         <motion.div
-          key={`saved-${netSaving}`}
+          key={`labor-${laborCost}`}
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
           className="bg-turquoise-500/10 border border-turquoise-500/30 rounded-xl p-6 text-center"
         >
           <div className="text-turquoise-300 text-sm mb-2">עלות שעות עבודה</div>
           <div className="text-2xl font-bold text-turquoise-400">
-            ₪{Math.round(moneySaved).toLocaleString()}
+            ₪{Math.round(laborCost).toLocaleString()}
           </div>
         </motion.div>
       </div>

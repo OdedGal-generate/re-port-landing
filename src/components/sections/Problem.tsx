@@ -5,7 +5,7 @@ import CountUp from "../animations/CountUp";
 
 const stats = [
   {
-    number: 15,
+    number: 20,
     suffix: "+ דקות",
     label: "זמן ממוצע להורדה, שליחה ותיוק האישורי מס ללקוח",
     icon: (
