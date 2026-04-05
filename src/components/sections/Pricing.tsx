@@ -58,7 +58,7 @@ function SavingsCalculator() {
         {/* Clients slider */}
         <div>
           <label className="block text-gray-400 text-sm mb-2 text-center">
-            כמה לקוחות יש לכם?
+            כמה לקוחות (עצמאים) יש לכם?
           </label>
           <input
             type="range"
