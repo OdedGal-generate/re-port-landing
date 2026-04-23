@@ -9,7 +9,7 @@ const heebo = Heebo({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.re-port.co.il"),
+  metadataBase: new URL("https://re-port-landing.vercel.app"),
   title: "Re-PORT — הורדת דוחות שנתיים אוטומטית לסוכני ביטוח",
   description:
     "Re-PORT מוריד אוטומטית דוחות שנתיים ואישורי מס מכל חברות הביטוח ובתי ההשקעות בקליק אחד. חוסך שעות עבודה לסוכני ביטוח.",
