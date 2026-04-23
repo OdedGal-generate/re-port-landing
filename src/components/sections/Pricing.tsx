@@ -42,7 +42,7 @@ function SavingsCalculator() {
   const [hourlyRate, setHourlyRate] = useState(100);
 
   const totalReports = clients * reportsPerClient;
-  const pricePerReport = totalReports > 600 ? 4 : 5;
+  const pricePerReport = totalReports >= 600 ? 4 : 5;
   const totalCost = totalReports * pricePerReport;
   const timeSavedMinutes = clients * minutesPerClient;
   const timeSavedHours = timeSavedMinutes / 60;
@@ -144,7 +144,19 @@ function SavingsCalculator() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div
+          key={`reports-${totalReports}`}
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          className="bg-white/5 rounded-xl p-6 text-center"
+        >
+          <div className="text-gray-400 text-sm mb-2">מספר דוחות להורדה</div>
+          <div className="text-2xl font-bold text-white">
+            {totalReports.toLocaleString()} דוחות
+          </div>
+        </motion.div>
+
         <motion.div
           key={`cost-${totalCost}`}
           initial={{ scale: 0.95 }}
