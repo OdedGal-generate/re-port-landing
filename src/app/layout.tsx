@@ -9,6 +9,7 @@ const heebo = Heebo({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.re-port.co.il"),
   title: "Re-PORT — הורדת דוחות שנתיים אוטומטית לסוכני ביטוח",
   description:
     "Re-PORT מוריד אוטומטית דוחות שנתיים ואישורי מס מכל חברות הביטוח ובתי ההשקעות בקליק אחד. חוסך שעות עבודה לסוכני ביטוח.",
@@ -20,12 +21,19 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://re-port-landing.vercel.app/images/og-image.jpg",
+        url: "/images/og-image.jpg",
         width: 1200,
-        height: 630,
+        height: 675,
         alt: "Re-PORT — Insurtech Gateway",
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Re-PORT — Insurtech Gateway",
+    description:
+      "הורדת דוחות שנתיים אוטומטית מכל חברות הביטוח ובתי ההשקעות",
+    images: ["/images/og-image.jpg"],
   },
 };
 
