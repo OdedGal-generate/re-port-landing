@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<title>יום בחיים של נער בן 15</title>
+<style>
+  @font-face { font-family: 'Rubik'; src: url(fonts/rubik-latin.woff2) format('woff2'); font-weight: 300 900; unicode-range: U+0000-00FF, U+2000-206F; }
+  @font-face { font-family: 'Rubik'; src: url(fonts/rubik-hebrew.woff2) format('woff2'); font-weight: 300 900; unicode-range: U+0590-05FF, U+200C-2010, U+FB1D-FB4F; }
+  @font-face { font-family: 'ShareTechMono'; src: url(fonts/sharetechmono-latin.woff2) format('woff2'); }
+  html, body { margin: 0; background: #000; }
+  canvas { display: block; width: 100vw; max-width: 1920px; height: auto; }
+  #ui { position: fixed; bottom: 8px; left: 8px; right: 8px; display: flex; gap: 8px; align-items: center; color: #fff; font: 14px sans-serif; }
+  #ui input[type=range] { flex: 1; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<div id="ui"><button id="play">▶</button><input id="seek" type="range" min="0" max="1000" value="0"><span id="tc">0.00</span></div>
+
+<script src="src/core.js"></script>
+<script src="src/draw.js"></script>
+<script src="src/boy.js"></script>
+
+<!-- shared location helpers (one file per location group) -->
+<script src="env/bedroom.js"></script>
+<script src="env/bathroom.js"></script>
+<script src="env/street.js"></script>
+<script src="env/school.js"></script>
+<script src="env/kitchen-field.js"></script>
+<script src="env/night.js"></script>
+
+<!-- scenes -->
+<script src="scenes/01-wake.js"></script>
+<script src="scenes/02-shower.js"></script>
+<script src="scenes/03-teeth.js"></script>
+<script src="scenes/04-dress.js"></script>
+<script src="scenes/05-leave.js"></script>
+<script src="scenes/06-school-in.js"></script>
+<script src="scenes/07-timelapse.js"></script>
+<script src="scenes/08-school-out.js"></script>
+<script src="scenes/09-walk-home.js"></script>
+<script src="scenes/10-lunch.js"></script>
+<script src="scenes/11-gear-up.js"></script>
+<script src="scenes/12-training.js"></script>
+<script src="scenes/13-back-home.js"></script>
+<script src="scenes/14-shower-2.js"></script>
+<script src="scenes/15-homework.js"></script>
+<script src="scenes/16-friends.js"></script>
+<script src="scenes/17-sleep.js"></script>
+<script src="scenes/_test.js"></script>
+
+<script>
+  window.ready = (async () => {
+    const tl = await (await fetch('timeline.json')).json();
+    V.loadTimeline(tl);
+    await document.fonts.load("700 40px 'Rubik'", 'אבג abc');
+    await document.fonts.load("400 40px 'ShareTechMono'", '0123');
+    await document.fonts.ready;
+    return tl.total;
+  })();
+
+  // interactive preview (open index.html through a local http server)
+  (async () => {
+    const total = await window.ready;
+    if (navigator.webdriver) return; // headless renderer drives frames itself
+    const c = document.getElementById('c'), ctx = c.getContext('2d');
+    const seek = document.getElementById('seek'), tc = document.getElementById('tc');
+    let T = 0, playing = false, last = 0;
+    const q = new URLSearchParams(location.search);
+    const only = q.get('scene');
+    const draw = () => {
+      if (only) V.renderScene(ctx, only, T % V.timeline.scenes.find((s) => s.id === only).dur);
+      else V.renderAt(ctx, T);
+      tc.textContent = T.toFixed(2);
+    };
+    seek.oninput = () => { T = (seek.value / 1000) * total; draw(); };
+    document.getElementById('play').onclick = () => { playing = !playing; last = performance.now(); loop(); };
+    const loop = () => {
+      if (!playing) return;
+      const now = performance.now();
+      T = (T + (now - last) / 1000) % total;
+      last = now;
+      seek.value = (T / total) * 1000;
+      draw();
+      requestAnimationFrame(loop);
+    };
+    draw();
+  })();
+</script>
+</body>
+</html>

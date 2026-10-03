@@ -1,0 +1,25 @@
+{
+  "title": "יום בחיים של נער בן 15",
+  "fps": 30,
+  "width": 1920,
+  "height": 1080,
+  "scenes": [
+    { "id": "01-wake",       "dur": 8, "in": "black", "stamp": { "time": "07:30", "place": "חדר השינה" } },
+    { "id": "02-shower",     "dur": 5, "in": "fade",  "stamp": { "time": "07:35", "place": "מקלחת של בוקר" } },
+    { "id": "03-teeth",      "dur": 5, "in": "fade",  "stamp": { "time": "07:42", "place": "צחצוח שיניים" } },
+    { "id": "04-dress",      "dur": 5, "in": "cut",   "stamp": { "time": "07:48", "place": "מתלבש" } },
+    { "id": "05-leave",      "dur": 4, "in": "cut",   "stamp": { "time": "07:52", "place": "יוצא לבית הספר" } },
+    { "id": "06-school-in",  "dur": 6, "in": "fade",  "stamp": { "time": "08:00", "place": "מגיע לבית הספר" } },
+    { "id": "07-timelapse",  "dur": 3, "in": "cut",   "stamp": { "time": "08:00", "to": "15:00", "place": "יום לימודים" } },
+    { "id": "08-school-out", "dur": 5, "in": "cut",   "stamp": { "time": "15:00", "place": "יוצא מבית הספר" } },
+    { "id": "09-walk-home",  "dur": 5, "in": "fade",  "stamp": { "time": "15:00", "to": "15:15", "place": "הולך הביתה" } },
+    { "id": "10-lunch",      "dur": 7, "in": "cut",   "stamp": { "time": "15:20", "place": "ארוחת צהריים: שניצל וצ׳יפס" } },
+    { "id": "11-gear-up",    "dur": 5, "in": "cut",   "stamp": { "time": "16:40", "place": "מתארגן לאימון" } },
+    { "id": "12-training",   "dur": 5, "in": "fade",  "stamp": { "time": "17:00", "place": "אימון כדורגל" } },
+    { "id": "13-back-home",  "dur": 4, "in": "fade",  "stamp": { "time": "18:00", "place": "חוזר הביתה" } },
+    { "id": "14-shower-2",   "dur": 4, "in": "cut",   "stamp": { "time": "18:05", "place": "מקלחת אחרי אימון" } },
+    { "id": "15-homework",   "dur": 6, "in": "fade",  "stamp": { "time": "18:30", "to": "20:00", "place": "שיעורי בית" } },
+    { "id": "16-friends",    "dur": 9, "in": "black", "stamp": { "time": "21:00", "to": "01:30", "place": "יוצא עם החברים" } },
+    { "id": "17-sleep",      "dur": 8, "in": "black", "stamp": { "time": "01:30", "place": "חוזר הביתה והולך לישון" } }
+  ]
+}

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone canvas film project (plain browser scripts, rendered offline)
+    "video/**",
   ]),
 ]);
 
