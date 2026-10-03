@@ -52,6 +52,8 @@
 //     V.env.streetGroundY(x)          walkable ground under world x (porch 822, steps 848/874, 900)
 //     V.env.streetHipY(x, s, pose)    hip y so each foot stands on the porch / step / sidewalk under
 //                                     it (use instead of V.boy.standY on the stairs)
+//     V.env.streetStep(x, s, pose)    -> {y, pose}: walking up/down the steps — hip follows the
+//                                     supporting leg, the leg on the higher level bends (leg IK)
 //     V.env.streetDoorHandle(open)    -> [x, y] outside door lever for a door opening 0..1
 //     V.env.streetCastShadow(ctx, o, groundY, fn)  long cast shadow of fn(ctx) (world drawing, e.g.
 //                                     the hero) onto the ground, direction/length from o.hour.
@@ -192,6 +194,46 @@
       hip = Math.min(hip, g - low);
     }
     return hip;
+  };
+  // Walking up / down the porch steps. Like streetHipY, but when the two feet are over different
+  // levels the hip follows the SUPPORTING leg (the straighter knee) instead of the higher foot, and
+  // the leg over the higher level bends (2-bone leg IK) so its foot stays on its step. So a leading
+  // foot reaches DOWN onto the lower step (the body lowers as it lands) rather than swinging out over
+  // the steps at porch height, and a trailing foot no longer holds the hip up on the higher level.
+  // On level ground it equals streetHipY. Returns { y: hip y, pose: copy with adjusted legs }.
+  const legIK = (lp, l, dx, lift) => {
+    const Dm = V.boy.D;
+    const tx = l.a[0] - dx, ty = l.a[1] - lift; // ankle target, relative to the hip joint
+    const d = V.clamp(Math.hypot(tx, ty), Math.abs(Dm.TH - Dm.SH) + 1, Dm.TH + Dm.SH - 0.01);
+    const al = deg2(Math.acos(V.clamp((Dm.TH * Dm.TH + d * d - Dm.SH * Dm.SH) / (2 * Dm.TH * d), -1, 1)));
+    const ta = deg2(Math.atan2(tx, ty)) + al; // knee forward
+    const kx = dx + Math.sin(V.deg(ta)) * Dm.TH, ky = Math.cos(V.deg(ta)) * Dm.TH;
+    const sa = deg2(Math.atan2(l.a[0] - kx, ty - ky));
+    return Object.assign({}, lp, { hip: ta, knee: sa - ta, foot: l.fa - sa - 90 }); // foot keeps its angle
+  };
+  V.env.streetStep = (x, s, pose) => {
+    const B = V.boy;
+    const p = Object.assign(B.pose.stand(), pose);
+    const j = B.fk(p);
+    const f = p.facing || 1;
+    const legs = [['legNear', j.legNear, 5], ['legFar', j.legFar, -5]].map(([key, l, dx]) => {
+      const low = Math.max(l.a[1], l.toe[1]) * s + 11 * s;
+      // ground under the shoe (heel just behind the ankle .. toe): the highest level wins
+      const xs = [x + f * (l.a[0] - 10) * s, x + f * (l.a[0] + l.toe[0]) * 0.5 * s, x + f * l.toe[0] * s];
+      let g = Infinity;
+      for (const fx of xs) g = Math.min(g, groundAt(fx));
+      const bend = -(p[key].knee || 0);
+      return { key, l, dx, g, need: g - low, sup: 1 - V.clamp((bend - 6) / 42) };
+    });
+    const [a, b] = legs;
+    const lo = Math.min(a.need, b.need);
+    const y = a.g === b.g ? lo : lo + Math.max(a.sup * (a.need - lo), b.sup * (b.need - lo));
+    const out = Object.assign({}, pose);
+    for (const L of legs) {
+      const pen = y - L.need; // > 0: this foot would sink into its step -> bend that leg
+      if (pen > 0) out[L.key] = legIK(p[L.key], L.l, L.dx, pen / s);
+    }
+    return { y, pose: out };
   };
   // door lever (outside) for an opening 0..1
   const DOOR_MAX = 84; // degrees fully open

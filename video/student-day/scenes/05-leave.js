@@ -105,7 +105,7 @@
     pose.facing = facing;
     // keep holding the strap with the far hand while walking (casual)
     if (facing === 1) pose.armFar = { sh: V.lerp(strap.sh, 26 + pose.armFar.sh * 0.25, 0.5), el: strap.el };
-    y = V.env.streetHipY(x, S, pose);
+    ({ y, pose } = V.env.streetStep(x, S, pose)); // down the steps: the leading foot reaches down onto them
     return { pose, x, y, s: S, sx: squashAt(t), inside: false, ground: V.env.streetGroundY(x) };
   }
 
@@ -169,7 +169,9 @@
       { t: 0.2, type: 'door_open' },
       { t: 0.34, type: 'footsteps', dur: 0.6, rate: 3.4, vol: 0.55 }, // out of the doorway onto the porch
       { t: 1.6, type: 'door_close' },
-      { t: 1.8, type: 'footsteps', dur: 2.2, rate: 3.2 },
+      // walk-off: foot onto step 2 (2.14), onto the sidewalk (2.45), then plants 2.81 ... 4.37 (into the fade)
+      { t: 2.12, type: 'footsteps', dur: 0.4, rate: 3.2 },
+      { t: 2.788, type: 'footsteps', dur: 1.6, rate: 3.2 },
     ],
     draw(ctx, t) {
       const hour = 7.9;

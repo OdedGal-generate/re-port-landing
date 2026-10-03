@@ -30,7 +30,9 @@
     FOAM.push({ x, y: -70 - h * 32 + Math.abs(x + 12) * 0.3, r: 12 + V.rand(i * 3.1) * 8, k: 0.45 + h * 0.4, i: 30 + i });
   }
   const MUD_HAIR = [[-30, -44, 13, 8], [6, -56, 11, 7], [-44, -16, 9, 11], [22, -40, 9, 6]];
-  const MUD_FACE = [[20, 10, 12, 8], [8, -26, 14, 7], [40, 4, 6, 5], [30, 38, 10, 6], [-2, 18, 7, 9]];
+  // face mud (head frame; eyes ~(18..33,-6), nose tip ~(44,5), mouth (27,25)): kept off the mouth and
+  // inside the face outline — the old chin spot sat on the open mouth / bottle cap
+  const MUD_FACE = [[18, 8, 11, 7], [8, -26, 14, 7], [36, 2, 5, 4], [6, 32, 7, 5], [-2, 18, 7, 9]];
 
   const mudFace = (t) => 1 - V.ep(t, 1.75, 2.75);
   const mudHair = (t) => 1 - V.ep(t, 1.6, 2.9);
@@ -66,6 +68,8 @@
     const mouthL = K.headPt(pose, 30, 26);
     const aim = K.aim(pose, 'near', mouthL[0], mouthL[1]);
     pose.propNear = micProp(aim.ang);
+    // face mud is drawn by the rig right after the head, so the near arm + bottle stay on top of it
+    pose.headProp = (ctx) => faceMud(ctx, t);
     // far hand: scrubs the back of the head, then is thrown up for the finale
     const w = t * W2 * 2.6;
     const fT = K.headPt(pose, -30 + 12 * Math.cos(w), -56 + 9 * Math.sin(w));
@@ -121,27 +125,42 @@
   }
 
   function drawMud(ctx, t, h) {
-    const mh = mudHair(t), mf = mudFace(t);
+    const mh = mudHair(t);
+    if (mh <= 0) return;
     ctx.save();
     K.headFrame(ctx, h.x, h.y, h.s, h.pose);
-    if (mh > 0) {
-      ctx.globalAlpha = mh * 0.85;
-      MUD_HAIR.forEach(([x, y, rx, ry]) => V.ellipse(ctx, x, y, rx, ry, '#7a5232'));
-    }
-    if (mf > 0) {
-      ctx.globalAlpha = mf * 0.9;
-      MUD_FACE.forEach(([x, y, rx, ry], i) => V.ellipse(ctx, x, y + (1 - mf) * 10, rx, ry, '#73492a', i * 0.3));
-      // sweat drops on the forehead (start)
-      ctx.globalAlpha = mf;
-      [[14, -30], [30, -24]].forEach(([x, y]) => {
-        V.ellipse(ctx, x, y, 3, 4.5, 'rgba(150,210,245,0.95)');
-        V.circle(ctx, x - 0.8, y - 1.5, 1.1, '#ffffff');
-      });
-      // muddy streaks running down the cheek as it washes off
-      ctx.globalAlpha = mf * (1 - mf) * 2.4;
-      V.line(ctx, 18, 14, 16, 14 + 30 * (1 - mf), '#8a6040', 4);
-      V.line(ctx, 34, 8, 33, 8 + 24 * (1 - mf), '#8a6040', 3);
-    }
+    ctx.globalAlpha = mh * 0.85;
+    MUD_HAIR.forEach(([x, y, rx, ry]) => V.ellipse(ctx, x, y, rx, ry, '#7a5232'));
+    ctx.restore();
+  }
+
+  // mud on the face, in the head frame (called by the rig as headProp): clipped to the face
+  // (head + jaw + nose, just inside the ink line); it fades out in place as it washes off
+  function faceMud(ctx, t) {
+    const mf = mudFace(t);
+    if (mf <= 0) return;
+    const D = B.D;
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(0, 0, D.HEAD_RX - 1.5, D.HEAD_RY - 1.5, 0, 0, W2);
+    ctx.moveTo(38.5, 22);
+    ctx.ellipse(18, 22, 20.5, 18.5, 0, 0, W2);
+    ctx.moveTo(38, -4);
+    ctx.quadraticCurveTo(48, 8, 38, 10.5);
+    ctx.closePath();
+    ctx.clip();
+    ctx.globalAlpha = mf * 0.9;
+    MUD_FACE.forEach(([x, y, rx, ry], i) => V.ellipse(ctx, x, y, rx, ry, '#73492a', i * 0.3));
+    // sweat drops on the forehead (start)
+    ctx.globalAlpha = mf;
+    [[14, -30], [30, -24]].forEach(([x, y]) => {
+      V.ellipse(ctx, x, y, 3, 4.5, 'rgba(150,210,245,0.95)');
+      V.circle(ctx, x - 0.8, y - 1.5, 1.1, '#ffffff');
+    });
+    // muddy streaks running down the back of the cheek as it washes off (clear of the mouth)
+    ctx.globalAlpha = mf * (1 - mf) * 2.4;
+    V.line(ctx, 11, 14, 10, 14 + 22 * (1 - mf), '#8a6040', 4);
+    V.line(ctx, -1, 24, -2, 24 + 14 * (1 - mf), '#8a6040', 3);
     ctx.restore();
   }
 

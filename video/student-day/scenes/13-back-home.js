@@ -247,7 +247,8 @@
   V.registerScene('13-back-home', {
     sfx: [
       { t: 0, type: 'crickets', dur: 4.4, vol: 0.4 },
-      { t: 0, type: 'footsteps', dur: 2.2, rate: 2.4 },
+      { t: 0.215, type: 'footsteps', dur: 2.2, rate: 2.4 }, // heavy steps land 0.24, 0.65 ... 1.90, stop at the door 2.32
+      { t: 0.45, type: 'pop', vol: 0.15, pan: 0.5 }, // the street lamp by the house flickers on
       { t: 2.4, type: 'door_open' },
       { t: 2.68, type: 'footsteps', dur: 0.75, rate: 2.4, vol: 0.55 }, // over the threshold, up the hall
       { t: 3.6, type: 'door_close' },

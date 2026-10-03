@@ -409,7 +409,7 @@
       { t: 1.1, type: 'alarm', dur: 1.25 },
       { t: SLAM, type: 'slap' },
       { t: 3.0, type: 'birds', dur: 5.4, vol: 0.6 },
-      { t: 6.42, type: 'whoosh', dur: 0.3, vol: 0.3, dir: 1 }, // blanket flung off
+      { t: 6.32, type: 'whoosh', dur: 0.3, vol: 0.3, dir: 1 }, // blanket flung off (peak ~6.49 = fastest fling)
     ],
     stampTime: (t) => (t < 1.0 ? '07:29' : '07:30'),
     draw(ctx, t) {

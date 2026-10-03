@@ -427,9 +427,10 @@
   E.nightTurn = (t, t0, dur, from, to) => {
     if (from === to) return from;
     const k = V.ease.inOut(V.seg(t, t0, t0 + dur));
-    let f = V.lerp(from, to, k);
-    if (Math.abs(f) < 0.16) f = (k < 0.5 ? Math.sign(from) : Math.sign(to)) * 0.16;
-    return f;
+    if (Math.sign(from) === Math.sign(to)) return V.lerp(from, to, k);
+    // squash to 55% width and flip at the midpoint: never passes through a thin sliver frame
+    const g = k < 0.5 ? from : to;
+    return g * (0.55 + 0.45 * Math.abs(2 * k - 1));
   };
 
   // hip x so that the mean ankle x of the pose sits at feetX
@@ -1705,8 +1706,9 @@
     if (cust > 0) {
       c.save();
       c.globalAlpha = cust;
-      [[1500, 0.8, '#7a8fc4', 'ponytail', '#5a3a22'], [1690, 0.82, '#f3efe6', 'short', '#222']].forEach(([x, s, shirt, hs, hair], i) => {
-        const p = P.stand({ facing: -1, look: { skin: i ? '#8d5a3b' : '#f2c6a4', hair, hairStyle: hs }, outfit: { shirt, sleeves: 'short', logo: false, pants: '#2a2f3d', pantsLen: 'long', shoes: 'sneakers' }, armNear: { sh: 70, el: 60 }, mouth: 'smile', eyes: 'open' });
+      // both turned toward the owner (x 1590) with their arms down, so the three never tangle
+      [[1478, 0.8, '#7a8fc4', 'ponytail', '#5a3a22', 1], [1708, 0.82, '#f3efe6', 'short', '#222', -1]].forEach(([x, s, shirt, hs, hair, facing], i) => {
+        const p = P.stand({ facing, look: { skin: i ? '#8d5a3b' : '#f2c6a4', hair, hairStyle: hs }, outfit: { shirt, sleeves: 'short', logo: false, pants: '#2a2f3d', pantsLen: 'long', shoes: 'sneakers' }, armNear: { sh: 12, el: 24 }, armFar: { sh: -8, el: 18 }, mouth: 'smile', eyes: 'open' });
         V.groundShadow(c, x, 900, 50 * s);
         B.draw(c, x, B.standY(900, s, p), s, p);
       });

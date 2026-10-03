@@ -7,7 +7,7 @@
 //   node tools/render.mjs global <T1,T2,...>          stills of the whole film at global times
 //   node tools/render.mjs perf <sceneId>               average draw time per frame (keep < 60 ms)
 //   node tools/render.mjs cues                         writes out/cues.json (all sfx cues, global time)
-//   node tools/render.mjs video [--from 0] [--to end] [--scale 1] [--out out/student-day.mp4] [--audio out/audio.wav]
+//   node tools/render.mjs video [--from 0] [--to end] [--scale 1] [--crf 18] [--preset medium] [--out out/student-day.mp4] [--audio out/audio.wav]
 //
 // Needs: npm i playwright-core (in this folder or a parent), ffmpeg on PATH.
 import http from 'node:http';
@@ -172,7 +172,7 @@ try {
     const W = Math.round((1920 * scale) / 2) * 2, H = Math.round((1080 * scale) / 2) * 2;
     const ff = ['-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-'];
     if (audio) ff.push('-ss', String(from), '-t', String(to - from), '-i', audio);
-    ff.push('-vf', `scale=${W}:${H}:flags=lanczos,format=yuv420p`, '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-movflags', '+faststart');
+    ff.push('-vf', `scale=${W}:${H}:flags=lanczos,format=yuv420p`, '-c:v', 'libx264', '-preset', opt('preset', 'medium'), '-tune', 'animation', '-crf', opt('crf', '18'), '-movflags', '+faststart');
     if (audio) ff.push('-c:a', 'aac', '-b:a', '192k', '-shortest');
     ff.push(out);
     const proc = spawn('ffmpeg', ff, { stdio: ['pipe', 'ignore', 'inherit'] });

@@ -18,7 +18,7 @@
   const FRONT_UNTIL = 4.28; // hero is drawn in front of the blanket until he lands on the bed
 
   // ------------------------------------------------------------------ door
-  const doorOpen = (t) => V.kf(t, [[0.3, 0], [0.42, 0.11], [0.54, 0.13], [0.9, 0.62], [1.52, 0.62], [2.6, 0]]);
+  const doorOpen = (t) => V.kf(t, [[0.3, 0], [0.42, 0.11], [0.54, 0.13], [0.8, 0.62], [1.52, 0.62], [2.6, 0]]);
 
   // ------------------------------------------------------------------ sneaking gait
   // [foot, liftTime, plantTime, fromX, toX, liftHeight]
@@ -54,8 +54,9 @@
     V.line(c, 0, -3, 22, -4, '#e9b48f', 8);
   };
 
-  // chest rise for the snore: up during the inhale (5.1-6.35), down on the whistled exhale
-  const breath = (t) => V.kf(t, [[5.0, 0], [5.1, 0], [6.35, 1], [6.5, 1], [7.5, -0.3], [8.6, 0.4]], 'sine');
+  // chest rise for the snore: up during the inhale (5.44-6.69), down on the whistled exhale
+  const ASLEEP = 5.42; // back down under the blanket, out like a light
+  const breath = (t) => V.kf(t, [[5.34, 0], [5.44, 0], [6.69, 1], [6.84, 1], [7.84, -0.3], [8.6, 0.4]], 'sine');
 
   // ------------------------------------------------------------------ the hero
   function hero(t) {
@@ -143,9 +144,9 @@
       p2.brows = 0.4;
       pillowDent = 10 + 14 * V.seg(t, PLOP, PLOP + 0.05);
 
-      // crunch up, grab the blanket, flop back pulling it to the chin
+      // crunch up (4.6-4.9), grab the blanket (hold 4.9-5.06), lie back pulling it to the chin
       if (t >= 4.6) {
-        const up = V.kf(t, [[4.6, 0], [4.8, 0.66], [4.86, 0.66], [5.08, 0]], 'inOut');
+        const up = V.kf(t, [[4.6, 0], [4.9, 0.66], [5.06, 0.66], [ASLEEP, 0]], 'inOut');
         p2.rot = -90 + 90 * up;
         p2.torso = 6 + 14 * up;
         p2.head = V.lerp(24, 18, up);
@@ -154,23 +155,24 @@
         p2.legNear = { hip: 92 + p2.rot, knee: -4, foot: -62 };
         p2.legFar = { hip: 88 + p2.rot, knee: -4, foot: -58 };
         // reach for the blanket edge, grab it, then drag it up under the chin (elbow tucked)
-        const hx = V.kf(t, [[4.6, 1040], [4.82, 1094]]);
-        const hy = V.kf(t, [[4.6, 640], [4.82, 720]]);
+        const hx = V.kf(t, [[4.6, 1040], [4.88, 1094]]);
+        const hy = V.kf(t, [[4.6, 640], [4.88, 720]]);
         const reachIK = IK.arm(Object.assign({}, p2), x, y, S, 'near', [hx, hy]).armNear;
         const FOLD = { sh: -25, el: 158 };
-        p2.armNear = lerpArm(lerpArm({ sh: 34, el: 36 }, reachIK, V.ep(t, 4.6, 4.74)), FOLD, V.ep(t, 4.86, 5.1));
-        p2.armFar = lerpArm({ sh: 150, el: 30 }, { sh: -12, el: 16 }, V.ep(t, 4.6, 4.9));
+        p2.armNear = lerpArm(lerpArm({ sh: 34, el: 36 }, reachIK, V.ep(t, 4.6, 4.8)), FOLD, V.ep(t, 5.06, ASLEEP + 0.02));
+        p2.armFar = lerpArm({ sh: 150, el: 30 }, { sh: -12, el: 16 }, V.ep(t, 4.6, 4.95));
         p2.eyes = 'closed';
-        p2.mouth = t < 5.08 ? 'neutral' : 'smile';
+        p2.mouth = t < ASLEEP ? 'neutral' : 'smile';
         p2.brows = 0;
-        const grab = V.seg(t, 4.84, 5.1);
-        if (t >= 4.84) blanketEdge = B.joints(x, y, S, p2).nearHand[0] + 8;
+        // edge in his fist from 4.92; the heap pulls taut as he lies back with it (5.0 ->)
+        const grab = V.seg(t, 5.0, ASLEEP + 0.02);
+        if (t >= 4.92) blanketEdge = B.joints(x, y, S, p2).nearHand[0] + 8;
         heap = 0.85 * (1 - V.ease.out(grab));
-        if (t >= 5.08) {
-          // asleep: the mouth follows the snore sound (snore cue at 5.0 -> rattling inhale
-          // 5.1-6.35, whistling exhale 6.5-7.5), then a contented sleepy smile for the last shot
+        if (t >= ASLEEP) {
+          // asleep: the mouth follows the snore sound (snore cue at 5.34 -> rattling inhale
+          // 5.44-6.69, whistling exhale 6.84-7.84), then a contented sleepy smile
           p2.eyes = 'sleep';
-          p2.mouth = t < 5.3 ? 'smile' : t < 6.4 ? 'open' : t < 7.5 ? 'o' : t < 7.7 ? 'neutral' : 'smile';
+          p2.mouth = t < 5.64 ? 'smile' : t < 6.74 ? 'open' : t < 7.84 ? 'o' : 'smile';
           p2.head = 24 + 1.5 * breath(t);
         }
       }
@@ -198,8 +200,9 @@
       { t: 0.9, type: 'footsteps', dur: 1.6, rate: 2.2, vol: 0.35 },
       { t: 2.6, type: 'door_close', vol: 0.5 },
       { t: 3.05, type: 'footsteps', dur: 0.8, rate: 5, vol: 0.18 },
+      { t: 4.04, type: 'footsteps', dur: 0.1, vol: 0.2 }, // kicked-off sneakers land (~4.06)
       { t: PLOP, type: 'plop' },
-      { t: 5.0, type: 'snore', dur: 3.4 },
+      { t: 5.34, type: 'snore', dur: 3.4 },
     ],
     draw(ctx, tIn) {
       const t = Math.min(tIn, 8.6);
@@ -213,7 +216,7 @@
       };
       const j = B.joints(h.x, h.y, S, h.pose);
       const inBed = t >= FRONT_UNTIL;
-      const breathe = t > 5.08 ? 6 * breath(t) : 0;
+      const breathe = t > ASLEEP ? 6 * breath(t) : 0;
       // the blanket only shapes itself over his legs once they have dropped onto the mattress
       const settle = V.ep(t, 4.4, 4.56);
       const lumps = inBed ? V.env.bedroomLumps(j, breathe).map(([lx, lh]) => [lx, 12 + (lh - 12) * settle]) : null;
@@ -223,10 +226,10 @@
           // visible only through the door gap; the right jamb reveals him as he steps forward
           const g = V.env.bedroomParts.doorGeom(open);
           const x0 = g.xf + 10 * g.sn;
-          // right edge = the door jamb while he is still in the hallway; it sweeps away within
-          // ~3 frames (0.7-0.8) as he leans through the gap, so his head appears in one go
-          // instead of being cut in half for several frames
-          const x1 = BR.door.x1 + 4 + 900 * V.ep(t, 0.7, 0.8, 'inOut');
+          // right edge = the door jamb while he is still in the hallway. It goes away in one frame
+          // (0.867, mid-step) only once the door is wide open (0.62 at 0.8) and most of him already
+          // shows in the gap, so just his face/hands step out from behind the jamb (no sliced frames)
+          const x1 = BR.door.x1 + 4 + 900 * V.ep(t, 0.84, 0.88, 'inOut');
           c.save();
           c.beginPath();
           c.rect(x0, -2000, Math.max(0, x1 - x0), 6000);
@@ -284,11 +287,11 @@
         ctx.restore();
       }
       // Zzz
-      if (t > 5.15) {
-        const za = V.ep(t, 5.15, 5.6);
+      if (t > ASLEEP + 0.07) {
+        const za = V.ep(t, ASLEEP + 0.07, ASLEEP + 0.52);
         const [hx, hy] = toS(j.head[0] + 10, j.head[1] - 50);
         const sz = 30 * Math.sqrt(cam.zoom);
-        V.floaters(ctx, hx, hy, t - 5.15, { char: 'Z', n: 3, rise: 70 * Math.sqrt(cam.zoom), dx: 46 * Math.sqrt(cam.zoom), size: sz, color: '#e8eeff', alpha: za, period: 1.7 });
+        V.floaters(ctx, hx, hy, t - (ASLEEP + 0.07), { char: 'Z', n: 3, rise: 70 * Math.sqrt(cam.zoom), dx: 46 * Math.sqrt(cam.zoom), size: sz, color: '#e8eeff', alpha: za, period: 1.7 });
       }
       // closing caption
       const ca = Math.min(V.ep(t, 6.4, 6.75, 'out'), 1 - V.ep(t, 7.25, 7.6));

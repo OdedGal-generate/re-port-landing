@@ -6,7 +6,8 @@
   "scripts": {
     "cues": "node tools/render.mjs cues",
     "audio": "python3 tools/audio.py",
-    "video": "node tools/render.mjs video --audio out/audio.wav"
+    "video": "node tools/render.mjs video --audio out/audio.wav --crf 23 --preset slow --out student-day.mp4",
+    "build": "npm run cues && npm run audio && npm run video"
   },
   "devDependencies": {
     "playwright-core": "1.56.0"

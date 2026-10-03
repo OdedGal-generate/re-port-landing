@@ -97,7 +97,7 @@
   V.registerScene('07-timelapse', {
     sfx: [
       { t: 0.0, type: 'timewarp', dur: 3 },
-      { t: 0.2, type: 'clock_fast', dur: 2.6 },
+      { t: 0.45, type: 'clock_fast', dur: 2.1 }, // only while the hands move (kOf: 0.45 .. 2.55)
     ],
     draw(ctx, t, info) {
       const k = kOf(t);

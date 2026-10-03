@@ -188,9 +188,9 @@
     sfx: [
       { t: 0.0, type: 'crowd', dur: 5.5, vol: 0.5 },
       { t: 0.0, type: 'birds', dur: 6, vol: 0.3 },
-      { t: 0.4, type: 'footsteps', dur: 3.2, rate: 3.2 },
+      { t: 0.69, type: 'footsteps', dur: 2.95, rate: 2.09 }, // on the hero's 7 walk plants 0.71 .. 3.58
       { t: 3.8, type: 'school_bell', dur: 1.6 },
-      { t: 4.0, type: 'run_steps', dur: 1.2 },
+      { t: 4.25, type: 'run_steps', dur: 0.85, rate: 3.6 }, // jog plants 4.27, 4.55, 4.83, 5.10 (doorway)
       { t: 5.9, type: 'door_close', vol: 0.8 },
     ],
     draw(ctx, t, info) {

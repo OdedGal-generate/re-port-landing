@@ -175,7 +175,8 @@
   function faceAt(t, h) {
     let eyes = B.blink(t, 'open', 2), mouth = 'smile', brows = 0, blush = 0, cheek = 0;
     const chewing = (t > 1.8 && t < 3.0) || (t > 3.2 && t < 4.45);
-    const chewOn = Math.sin(t * Math.PI * 2 * 4.5) > 0;
+    // jaw in step with the chew cues (1.7 crunches/s from 1.8 and from 3.2)
+    const chewOn = Math.sin((t - (t < 3.2 ? 1.8 : 3.2)) * Math.PI * 2 * 1.7) > 0;
     if (t < 1.46) {
       eyes = 'happy';
       mouth = 'grin';
@@ -561,13 +562,23 @@
     sfx: [
       { t: 1.6, type: 'clink' },
       { t: 1.8, type: 'chew', dur: 1.2 },
+      { t: 2.28, type: 'clink', vol: 0.25 }, // spears a fry
       { t: 3.0, type: 'clink' },
       { t: 3.2, type: 'chew', dur: 1.0 },
       { t: 3.3, type: 'whoosh', vol: 0.3 },
+      // speed-eating stabs (FORKFULS ts)
+      { t: 3.36, type: 'clink', vol: 0.3 },
+      { t: 3.56, type: 'clink', vol: 0.3 },
+      { t: 3.76, type: 'clink', vol: 0.3 },
+      { t: 3.96, type: 'clink', vol: 0.3 },
       { t: 4.2, type: 'clink', vol: 0.4 },
       { t: 4.6, type: 'gulp' },
       { t: 5.2, type: 'clink' },
       { t: 5.6, type: 'creak', vol: 0.3 },
+      // belly pats (the hand drops back onto the belly every 0.3 s from 6.05)
+      { t: 6.35, type: 'clap', vol: 0.15 },
+      { t: 6.65, type: 'clap', vol: 0.15 },
+      { t: 6.95, type: 'clap', vol: 0.15 },
     ],
     draw(ctx, t) {
       if (t < CUT) {

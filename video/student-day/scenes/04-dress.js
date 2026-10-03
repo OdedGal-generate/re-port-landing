@@ -1099,7 +1099,7 @@
       { t: 1.8, type: 'whoosh' },
       { t: 2.3, type: 'plop', vol: 0.45 },
       { t: 2.6, type: 'whoosh' },
-      { t: 3.53, type: 'zipper' },
+      { t: 3.53, type: 'zipper', dur: 0.15 }, // the visible zip runs 3.53-3.67
       { t: 3.7, type: 'whoosh', vol: 0.4 },
       { t: 3.96, type: 'plop', vol: 0.4 },
       { t: 4.4, type: 'sparkle' },

@@ -76,7 +76,8 @@
       pose.armNear = { sh: V.lerp(pose.armNear.sh, ik.armNear.sh, reach), el: V.lerp(pose.armNear.el, ik.armNear.el, reach) };
       pose.eyes = blinkE;
     }
-    const y = V.env.streetHipY(hx, S, pose);
+    let y;
+    ({ y, pose } = V.env.streetStep(hx, S, pose)); // up the steps: the leading leg bends onto them
     return { x: hx, y, pose, ground: V.env.streetGroundY(hx), doorOpen };
   }
 
@@ -100,7 +101,9 @@
 
   V.registerScene('09-walk-home', {
     sfx: [
-      { t: 0, type: 'footsteps', dur: 4.3, rate: 3.2 },
+      // heel strikes 0.20, 0.51 ... 3.33, onto step 2 (3.64), onto the porch (3.95); last step at the door (4.16)
+      { t: 0.18, type: 'footsteps', dur: 3.85, rate: 3.2 },
+      { t: 4.14, type: 'footsteps', dur: 0.1, rate: 3.2, vol: 0.85 },
       { t: 0, type: 'birds', dur: 5.4, vol: 0.4 },
       { t: 1.5, type: 'car_pass', dir: 1 },
       { t: 4.5, type: 'door_open' },

@@ -9,7 +9,7 @@
 (function () {
   const B = V.boy, P = B.pose, E = V.env;
   const K = E.SCHOOL_KIDS;
-  const BELL = 0.3, BURST = 0.5, FIVE = 2.8;
+  const BELL = 0.3, BURST = 0.5, FIVE = 2.8, WAVE = 3.95;
   const DOOR_Y = E.SCHOOL.facadeY;
   const T1 = 6;
 
@@ -36,20 +36,23 @@
     run: [[0.6, 0.75], [1.6, 0.75], [1.95, 0]],
     t1: T1,
   });
-  // best friend: first out, runs ahead to the left, turns and waits by the fence
-  const FR_PTS = [...OUT, [815, 846], [740, 868], [535, 868]];
+  // best friend: first out, runs ahead to the left, turns and waits by the fence (an arm's length
+  // from where the hero stops, so the high-five hands meet in the gap between their faces)
+  const FR_X = 488;
+  const FR_PTS = [...OUT, [815, 846], [740, 868], [FR_X, 868]];
   const friendOut = E.schoolMover({
     pts: FR_PTS,
     at: plan(FR_PTS, 0.5, [
-      { to: [1060, 604], v: 900, ease: 'in' },
-      { to: [640, 868], v: 900 },
-      { to: [535, 868], v: 900, ease: 'out2' },
+      { to: [1060, 604], v: 940, ease: 'in' },
+      { to: [600, 868], v: 940 },
+      { to: [FR_X, 868], v: 940, ease: 'out2' },
     ], 24),
     run: [[0, 0.8], [1.45, 0.8], [1.7, 0]],
     size: K.friend.size,
     t1: T1,
   });
-  const FA_PTS = [[535, 868], [1200, 866], [2400, 864]];
+  // steps back and walks off right along the fence (the hero, heading left, passes in front of him)
+  const FA_PTS = [[FR_X, 868], [530, 842], [1200, 834], [2400, 832]];
   const friendAway = E.schoolMover({
     pts: FA_PTS,
     at: plan(FA_PTS, 3.12, [{ to: 60, v: 270, ease: 'in2' }, { to: 1800, v: 270 }]),
@@ -86,8 +89,25 @@
   const layerOf = (y) => (y >= 805 ? 'street' : y >= DOOR_Y ? 'yard' : 'door');
   const doorDark = (y) => V.clamp((DOOR_Y - y) / 40);
 
-  // where the two palms meet
-  const FIVE_PT = [603, 550];
+  // where the two palms meet: in the gap between the two faces, at about head-top height
+  const FIVE_PT = [566, 546];
+
+  // high-five arm. The HAND is moved along a path and the arm solved by IK every frame (lerping the
+  // joint angles to an IK solution swept the fist across the face): from the base pose's hand up and
+  // forward to FIVE_PT (palms a little apart, snapping together exactly at FIVE), slap + bounce,
+  // then straight back down in front of the chest.
+  function fiveArm(p, m, t, tUp, back) {
+    const k = V.ep(t, tUp, FIVE, 'out') * (1 - V.ep(t, 2.95, 3.2));
+    if (k <= 0) return false;
+    const hip = B.standY(m.y, m.s, p);
+    const base = B.joints(m.x, hip, m.s, p).nearHand;
+    const strike = V.ep(t, 2.68, FIVE, 'in');
+    const bounce = V.seg(t, FIVE, FIVE + 0.08) * (1 - V.seg(t, FIVE + 0.08, FIVE + 0.2));
+    const top = [FIVE_PT[0] + back * (22 * (1 - strike) + 10 * bounce), FIVE_PT[1] - 6 * bounce];
+    const tgt = [V.lerp(base[0], top[0], k), V.lerp(base[1], top[1], k)];
+    p.armNear = E.schoolArmIK(Object.assign({}, p), m.x, hip, m.s, 'near', tgt).armNear;
+    return true;
+  }
 
   function heroPose(t, m) {
     let facing = -1;
@@ -126,18 +146,6 @@
       p.brows = up > 0.3 ? 1 : 0.3;
       lift = 8 * up;
     }
-    // high-five: near arm rises to the meeting point, slap at FIVE, bounce back, down
-    const hf = V.ep(t, 2.58, 2.8, 'out') * (1 - V.ep(t, 2.95, 3.2));
-    if (hf > 0) {
-      const hip = B.standY(m.y, m.s, p);
-      const bounce = V.seg(t, FIVE, FIVE + 0.08) * (1 - V.seg(t, FIVE + 0.08, FIVE + 0.2));
-      const tgt = [FIVE_PT[0] + 10 * bounce, FIVE_PT[1] - 6 * bounce];
-      const ik = E.schoolArmIK(Object.assign({}, p), m.x, hip, m.s, 'near', tgt);
-      p.armNear = { sh: V.lerp(p.armNear.sh, ik.armNear.sh, hf), el: V.lerp(p.armNear.el, ik.armNear.el, hf) };
-      p.mouth = t > 2.74 && t < 3.1 ? 'grin' : p.mouth;
-      p.eyes = t > 2.8 && t < 3.05 ? 'happy' : 'open';
-      p.brows = 0.6;
-    }
     if (t >= 3.1) {
       p.mouth = 'smile';
       p.eyes = B.blink(t, 'open', 3);
@@ -145,16 +153,25 @@
       p.armNear.sh *= 1.25;
       p.armFar.sh *= 1.25;
     }
+    // high-five: near arm rises to the meeting point, slap at FIVE, bounce back, down
+    if (fiveArm(p, m, t, 2.58, 1)) {
+      if (t < 3.1) {
+        p.mouth = t > 2.74 ? 'grin' : p.mouth;
+        p.eyes = t > 2.8 && t < 3.05 ? 'happy' : 'open';
+      }
+      p.brows = 0.6;
+    }
     return { pose: p, lift };
   }
 
   function friendPose(t) {
     const k = K.friend;
     const look = { look: k.look, outfit: k.outfit, backpack: k.backpack };
+    let m, p;
     if (t < 3.12) {
-      const m = friendOut.at(t);
+      m = friendOut.at(t);
       const facing = E.schoolTurn(t, 1.72, 0.14, -1, 1);
-      const p = E.schoolGait(m, Object.assign({ facing }, look));
+      p = E.schoolGait(m, Object.assign({ facing }, look));
       p.eyes = B.blink(t, 'open', 7);
       p.mouth = m.g > 0.3 ? 'grin' : 'smile';
       if (t > 1.9 && t < 2.6) {
@@ -163,27 +180,21 @@
         p.eyes = t > 2.3 ? 'happy' : p.eyes;
         p.armFar = { sh: -10, el: 112 };
       }
-      const hf = V.ep(t, 2.56, 2.8, 'out') * (1 - V.ep(t, 2.95, 3.2));
-      if (hf > 0) {
-        const hip = B.standY(m.y, m.s, p);
-        const bounce = V.seg(t, FIVE, FIVE + 0.08) * (1 - V.seg(t, FIVE + 0.08, FIVE + 0.2));
-        const tgt = [FIVE_PT[0] - 10 * bounce, FIVE_PT[1] - 6 * bounce];
-        const ik = E.schoolArmIK(Object.assign({}, p), m.x, hip, m.s, 'near', tgt);
-        p.armNear = { sh: V.lerp(p.armNear.sh, ik.armNear.sh, hf), el: V.lerp(p.armNear.el, ik.armNear.el, hf) };
-        p.mouth = 'grin';
-        p.eyes = t > 2.8 && t < 3.05 ? 'happy' : 'open';
+    } else {
+      m = friendAway.at(t);
+      p = E.schoolGait(m, Object.assign({ facing: 1 }, look));
+      p.eyes = B.blink(t, 'open', 7);
+      // waves goodbye over his shoulder with the far arm, once the hero has passed in front of him
+      const wv = V.ep(t, WAVE, WAVE + 0.2) * (1 - V.ep(t, 4.5, 4.75));
+      if (wv > 0) {
+        p.armFar = { sh: V.lerp(p.armFar.sh, -150 + 12 * V.osc(t, 3), wv), el: V.lerp(p.armFar.el, -20, wv) };
+        p.head = -4 * wv;
+        p.mouth = 'open';
       }
-      return { m, pose: p };
     }
-    const m = friendAway.at(t);
-    const p = E.schoolGait(m, Object.assign({ facing: 1 }, look));
-    p.eyes = B.blink(t, 'open', 7);
-    // waves goodbye over his shoulder with the far arm
-    const wv = V.ep(t, 3.25, 3.45) * (1 - V.ep(t, 4.1, 4.35));
-    if (wv > 0) {
-      p.armFar = { sh: V.lerp(p.armFar.sh, -150 + 12 * V.osc(t, 3), wv), el: V.lerp(p.armFar.el, -20, wv) };
-      p.head = -4 * wv;
-      p.mouth = 'open';
+    if (fiveArm(p, m, t, 2.56, -1)) {
+      p.mouth = 'grin';
+      p.eyes = t > 2.8 && t < 3.05 ? 'happy' : 'open';
     }
     return { m, pose: p };
   }
@@ -260,8 +271,9 @@
       // high-five impact star
       const ik = V.seg(t, FIVE - 0.01, FIVE + 0.22);
       if (ik > 0 && ik < 1) {
-        const [x, y] = FIVE_PT;
-        const r = 18 + 46 * V.ease.out(ik);
+        // small and centred just above the palms, so it never covers a face
+        const x = FIVE_PT[0], y = FIVE_PT[1] - 10;
+        const r = 12 + 30 * V.ease.out(ik);
         ctx.save();
         ctx.globalAlpha = 1 - ik;
         ctx.beginPath();
@@ -291,9 +303,10 @@
       { t: 0.3, type: 'school_bell', dur: 1.4 },
       { t: 0.5, type: 'door_open', vol: 0.9 },
       { t: 0.6, type: 'crowd', dur: 4.2, vol: 0.6 },
-      { t: 0.9, type: 'run_steps', dur: 1.1, vol: 0.6 },
+      { t: 0.89, type: 'run_steps', dur: 0.8, rate: 5.6, vol: 0.6 }, // dash plants 0.91 .. 1.64
+      { t: 1.88, type: 'footsteps', dur: 0.1, vol: 0.5 }, // braking stop ~1.9
       { t: 2.8, type: 'clap' },
-      { t: 3.2, type: 'footsteps', dur: 1.8, rate: 3.2 },
+      { t: 3.3, type: 'footsteps', dur: 1.6, rate: 2.67 }, // walk-off plants 3.31 .. 4.83 (5.2 is 09's)
     ],
     draw(ctx, t, info) {
       const pull = V.ep(t, 0.75, 2.25);

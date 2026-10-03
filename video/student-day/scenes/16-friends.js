@@ -95,7 +95,7 @@
     // makes him stop at walk phase 0.5 (legs together, back foot mid-swing), so the last foot just
     // plants when he settles into the stand pose instead of gliding along the ground.
     x0: -281, v: 774, tD: 1.25, T: 0.5,
-    buzz: { x: 418, gy: 858, s: 0.97 },
+    buzz: { x: 418, gy: 836, s: 0.96 },
     blond: { x: 777, gy: 862, s: 0.96 },
     curly: { x: 1080, gy: 890, s: 1.05 },
   };
@@ -865,8 +865,9 @@
   V.registerScene('16-friends', {
     sfx: [
       { t: 0, type: 'crickets', dur: 9.4, vol: 0.5 },
-      { t: 0.2, type: 'footsteps', dur: 1.4, rate: 3 },
-      { t: 1.35, type: 'footsteps', dur: 0.95, rate: 2, vol: 0.3 }, // Itay strolls over
+      { t: 0.1, type: 'footsteps', dur: 1.4, rate: 4.55 }, // hero strides in: plants 0.13 .. 1.47
+      { t: 1.79, type: 'footsteps', dur: 0.1, rate: 5, vol: 0.6 }, // ...far foot closes as he stops
+      { t: 1.76, type: 'footsteps', dur: 0.55, rate: 2.1, vol: 0.3 }, // Itay strolls over (plants 1.79, 2.25)
       { t: 0.62, type: 'clap', vol: 0.2 },
       { t: 1.12, type: 'clap', vol: 0.2 },
       { t: 1.9, type: 'clap' },
@@ -878,11 +879,13 @@
       { t: 4.97, type: 'clap', vol: 0.3 },
       { t: 5.27, type: 'clap', vol: 0.45 },
       { t: 5.3, type: 'cheer', dur: 0.8, vol: 0.35 },
-      { t: 5.67, type: 'creak', vol: 0.25 },
+      { t: 5.69, type: 'creak', dur: 0.3, vol: 0.25 }, // shutter rolls down 5.70-5.92
       { t: 5.9, type: 'pop' },
-      { t: 6.18, type: 'footsteps', dur: 0.95, rate: 2, vol: 0.25 }, // Noam walks back, board in hand
+      { t: 6.69, type: 'footsteps', dur: 0.5, rate: 2.35, vol: 0.25 }, // Noam walks back, board in hand (plants 6.71, 7.13)
+      { t: 7.86, type: 'tick', dur: 0.2, vol: 0.6 }, // the neon flickers out
+      { t: 7.965, type: 'tick', dur: 0.2, vol: 0.5 },
       { t: 8.42, type: 'clap', vol: 0.8 },
-      { t: 8.7, type: 'footsteps', dur: 0.5, rate: 2.5, vol: 0.3 }, // Dani heads home
+      { t: 8.9, type: 'footsteps', dur: 0.1, vol: 0.25 }, // Dani heads home (first plant, into the dip to black)
     ],
     stampTime: stamp,
     draw(ctx, t) {

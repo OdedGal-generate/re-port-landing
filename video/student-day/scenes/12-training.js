@@ -522,8 +522,11 @@
 
   V.registerScene('12-training', {
     sfx: [
-      { t: 0.3, type: 'whistle' },
-      { t: 0.45, type: 'run_steps', dur: 1.85 },
+      { t: 0.3, type: 'whistle', dur: 0.35 }, // ends with the blow (cheeks puffed 0.28-0.62)
+      // foot plants: 0.76, 1.09, take-off 1.41 | hurdle (airborne, silent) | 1.78, 2.07, brake 2.22
+      { t: 0.742, type: 'run_steps', dur: 0.7, rate: 3.07 },
+      { t: 1.757, type: 'run_steps', dur: 0.35, rate: 3.38 },
+      { t: 2.2, type: 'run_steps', dur: 0.2, rate: 2 },
       { t: 1.3, type: 'whoosh', vol: 0.4 },
       { t: 1.36, type: 'kick', vol: 0.25 },
       { t: 2.6, type: 'kick' },
@@ -543,6 +546,8 @@
       const heroSt = { X: hs.x, Y: 0, pose: hs.pose, hipY: hs.hipY, lift: 0, scale: S };
       E.pitch(ctx, {
         t, cam, hour: 17.0, clock: '17:00',
+        // GOAL: the home score ticks 0 -> 1 as the ball hits the net, blinking three times
+        home: t >= 3.02 ? 1 : 0, homeOn: t < 3.02 || t > 3.92 || ((t - 3.02) / 0.3) % 1 < 0.6,
         netHit: netHit(t), netAt: { Y: NET.Y, h: NET.h },
         actors(c, api) {
           api.shadows(c, [shadowItem(m3), shadowItem(m2), shadowItem(ke), shadowItem(de), shadowItem(heroSt), shadowItem(co)]);

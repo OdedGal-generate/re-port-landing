@@ -105,7 +105,8 @@
 //   o.overlay(ctx)      SCREEN, after the golden grade
 //  LAYOUT  V.env.PITCH:  goal line X 2350, posts at Y 300 / 1300, crossbar h 400, net depth 260
 //   far touchline Y 2800, near touchline Y -420, fence Y 3600, team bench Y 3150 (X 260..860)
-//   scoreboard centre X 900, Y 3350 (LED clock o.clock, default '17:00')
+//   scoreboard centre X 900, Y 3350 (LED clock o.clock, default '17:00'; score o.home / o.away, default 0;
+//   o.homeOn false blanks the home digit, for a blinking goal flash)
 //   floodlight towers (off) X -900, 1500, 3900 at Y 6000. Halfway line X -1450 (centre circle).
 //   V.env.pitchP(cam, X, Y, h), V.env.pitchLayer(ctx, cam, Y), V.env.pitchZ(Y)
 // =============================================================================================
@@ -2053,8 +2054,11 @@
     V.text(ctx, 'אורח', cx + 350, top + 128, { size: 36, weight: 700, color: '#e9e3d6' });
     rr(ctx, cx - 400, top + 158, 100, 140, 10, '#0b0606');
     rr(ctx, cx + 300, top + 158, 100, 140, 10, '#0b0606');
-    V.sevenSeg(ctx, '0', cx - 376, top + 182, 92, { on: '#ffb020', off: 'rgba(255,170,30,0.08)', glow: 0.6 });
-    V.sevenSeg(ctx, '0', cx + 324, top + 182, 92, { on: '#ffb020', off: 'rgba(255,170,30,0.08)', glow: 0.6 });
+    // score digits: o.home / o.away (default 0); o.homeOn false blanks the home digit (goal flash)
+    const home = o.homeOn === false ? ' ' : String(o.home === undefined ? 0 : o.home);
+    const away = String(o.away === undefined ? 0 : o.away);
+    V.sevenSeg(ctx, home, cx - 376, top + 182, 92, { on: '#ffb020', off: 'rgba(255,170,30,0.08)', glow: 0.6 });
+    V.sevenSeg(ctx, away, cx + 324, top + 182, 92, { on: '#ffb020', off: 'rgba(255,170,30,0.08)', glow: 0.6 });
     // the clock
     const str = o.clock || '17:00';
     const dh = 150;

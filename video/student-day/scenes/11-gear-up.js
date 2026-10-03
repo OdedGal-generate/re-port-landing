@@ -705,13 +705,13 @@
       { t: 0.4, type: 'whoosh' },
       { t: 0.95, type: 'sparkle', vol: 0.6 },
       { t: 1.88, type: 'ding', vol: 0.35 },
-      { t: 2.6, type: 'zipper' },
+      { t: 2.58, type: 'zipper', dur: 0.26 }, // the zip runs 2.58-2.84
       { t: 2.97, type: 'whoosh', vol: 0.3 },
-      { t: 3.0, type: 'footsteps', dur: 0.24, rate: 5 },
+      { t: 3.125, type: 'footsteps', dur: 0.2, rate: 11 }, // plant 3.145, closing step 3.236
       { t: 3.4, type: 'kick', vol: 0.4 },
-      { t: 3.62, type: 'footsteps', dur: 0.44, rate: 4.5 },
+      { t: 3.68, type: 'footsteps', dur: 0.3, rate: 3.85 }, // plants 3.70, 3.96
       { t: 4.4, type: 'door_open' },
-      { t: 4.5, type: 'footsteps', dur: 0.9, rate: 4 },
+      { t: 4.585, type: 'footsteps', dur: 0.9, rate: 3.4 }, // plants 4.60, 4.90, 5.19
       { t: 4.6, type: 'birds', dur: 0.9, vol: 0.35 },
     ],
     draw(ctx, t) {

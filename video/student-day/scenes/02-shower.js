@@ -75,18 +75,21 @@
     an = swing(an, REST_N);
     af = swing(af, REST_F);
     let thumbK = 0;
-    if (t >= 4.3) {
+    if (t >= 4.14) {
       // wipe the face: hand up to the forehead, down over the face, then a thumbs-up held forward
       const pF = K.headPt(pose, 44, -34), pC = K.headPt(pose, 46, 34);
       const brow = K.wrapArm(K.ik(pose, 'near', pF[0], pF[1], 1), 90);
       const chin = K.wrapArm(K.ik(pose, 'near', pC[0], pC[1], 1), 90);
       const j0 = B.fk(K.full(pose));
       const thumb = K.wrapArm(K.ik(pose, 'near', j0.armNear.s[0] + 118, j0.armNear.s[1] - 10, 1), 90);
-      an = REST_N;
-      an = mixArm(an, brow, V.ep(t, 4.3, 4.44));
+      // lift to the brow along a curve (quadratic through a bent-elbow control pose): the elbow folds
+      // first so the hand rises close to the chest instead of whipping out on a straight arm
+      const u = V.ep(t, 4.14, 4.44), c0 = (1 - u) * (1 - u), c1 = 2 * u * (1 - u), c2 = u * u;
+      an = { sh: c0 * REST_N.sh + c1 * 30 + c2 * brow.sh, el: c0 * REST_N.el + c1 * 165 + c2 * brow.el };
       an = mixArm(an, chin, V.ep(t, 4.44, 4.6));
       an = mixArm(an, thumb, V.ep(t, 4.6, 4.86, 'outBack'));
-      thumbK = V.ep(t, 4.66, 4.8, 'outBack');
+      // outBack(0) is ~2e-16, not 0: keep the fist hidden until it actually starts
+      thumbK = t > 4.66 ? V.ep(t, 4.66, 4.8, 'outBack') : 0;
     }
     pose.armNear = an;
     pose.armFar = af;
@@ -98,7 +101,7 @@
   // a chunky fist (finger creases toward the camera) with the thumb popping up (k 0..1)
   function thumbUp(ctx, h) {
     const k = h.thumbK;
-    if (k <= 0) return;
+    if (!(k > 0.01)) return;
     const j = B.joints(h.x, h.y, h.s, h.pose);
     const skin = B.HERO.skin;
     const g = V.clamp(k * 1.6); // fist grows from the plain round hand

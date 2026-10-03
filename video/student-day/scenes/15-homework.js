@@ -4,7 +4,7 @@
 //  0.0-0.9  medium close: the hero (grey 'home' outfit) writes in a spiral notebook under the
 //           warm desk lamp, tongue out in concentration (pencil scribbling, right-to-left).
 //  0.9      the clock starts racing; the camera eases back to a wide shot that shows the window
-//           going from dusk to night while he works in fast motion:
+//           going from dark evening to deep night while he works in fast motion:
 //           1.6-2.3 taps his chin with the pencil, thinking ("?"); 2.6 + 3.6 page flips;
 //           finished sheets pile up next to the notebook; ~4.3 a sleepy yawn mid-sentence.
 //  5.15     slaps the notebook shut (ding + check mark), 5.3 big stretch, arms behind his head.
@@ -356,7 +356,8 @@
     const x = HIP.x, y = HIP.y;
     const fk = fastK(t);
     const pi = pageAt(t);
-    const stretch = V.ep(t, 5.32, 5.62, 'outBack');
+    // eased in (no one-frame jump), small overshoot settles back by 5.82
+    const stretch = V.kf(t, [[5.3, 0], [5.66, 1.05], [5.82, 1]], 'inOut');
     const think = V.ep(t, 1.6, 1.72) * (1 - V.ep(t, 2.22, 2.34));
     const scratch = V.ep(t, 3.0, 3.08) * (1 - V.ep(t, 3.3, 3.4));
     const yawnK = Math.sin(Math.PI * V.seg(t, 4.28, 4.62));
@@ -395,8 +396,8 @@
     }
     if (t > 5.06) {
       tongue = false;
-      pose.eyes = t < 5.32 ? 'happy' : t < 5.78 ? 'closed' : 'happy';
-      pose.mouth = t < 5.32 ? 'grin' : t < 5.78 ? 'yawn' : 'grin';
+      pose.eyes = t < 5.4 ? 'happy' : t < 5.86 ? 'closed' : 'happy';
+      pose.mouth = t < 5.4 ? 'grin' : t < 5.86 ? 'yawn' : 'grin';
       pose.brows = 0.6;
     }
     if (tongue) {
@@ -509,7 +510,9 @@
   function draw(ctx, t) {
     const k = clockK(t);
     const time = clockStr(t);
-    const hour = V.lerp(18.5, 20.0, k); // window sky: dusk -> night
+    // window sky: dark evening -> deep night. Starts at the same hour the 18:05 bathroom window
+  // (14-shower-2, HOUR 19.4) shows, so the sky never brightens again (no sun after nightfall).
+  const hour = V.lerp(19.4, 20.8, k);
     const light = V.lerp(0.7, 0.24, k);
     const actorLight = V.lerp(0.88, 0.58, k);
     const c = cam(t);
@@ -625,11 +628,12 @@
 
   V.registerScene('15-homework', {
     sfx: [
-      { t: 0.3, type: 'pencil', dur: 1.5 },
+      { t: 0.3, type: 'pencil', dur: 1.32 }, // page 1 writing stops at 1.62 (chin tap)
       { t: 0.9, type: 'clock_fast', dur: 4.2, vol: 0.5 },
-      { t: 2.6, type: 'page' },
+      { t: 2.28, type: 'pencil', dur: 0.3, vol: 0.7 }, // finishes page 1 (2.30-2.52)
+      { t: 2.4, type: 'page' }, // sweep peak ~2.65 = fastest flip (2.53-2.76), lands ~2.82
       { t: 2.8, type: 'pencil', dur: 0.7, vol: 0.7 },
-      { t: 3.6, type: 'page' },
+      { t: 3.4, type: 'page' }, // flip 3.53-3.76
       { t: 3.8, type: 'pencil', dur: 1.2 },
       { t: 5.26, type: 'clap', vol: 0.4 },
       { t: 5.3, type: 'ding' },
