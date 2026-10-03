@@ -1,0 +1,15 @@
+{
+  "name": "student-day-video",
+  "private": true,
+  "type": "module",
+  "description": "Code-rendered cartoon film: a day in the life of a 15-year-old (canvas -> headless Chromium -> ffmpeg)",
+  "scripts": {
+    "cues": "node tools/render.mjs cues",
+    "audio": "python3 tools/audio.py",
+    "video": "node tools/render.mjs video --audio out/audio.wav --crf 23 --preset slow --out student-day.mp4",
+    "build": "npm run cues && npm run audio && npm run video"
+  },
+  "devDependencies": {
+    "playwright-core": "1.56.0"
+  }
+}
