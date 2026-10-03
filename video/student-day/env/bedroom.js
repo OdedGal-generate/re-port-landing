@@ -82,9 +82,10 @@
 //     standing hip        B.standY(900, 1.25, P.stand()) = 640.5
 //
 //  LIGHTING ORDER (inside bedroomScene): room -> night dim -> practical lights that actors can
-//  occlude (window sky, lit hallway, the LED clock re-drawn bright) -> actors/blanket/front
-//  (dimmed with the same maths) -> additive glows on top (sun/moon beams, dust motes, lamp
-//  cone, hallway wedge, red LED spill). Daylight (light 1) skips all the dimming.
+//  occlude (window sky, lit hallway, the LED clock re-drawn bright + the hot core of its red
+//  spill) -> actors/blanket/front (dimmed with the same maths) -> additive glows on top
+//  (sun/moon beams, dust motes, lamp cone, hallway wedge, the wide faint red LED spill).
+//  Daylight (light 1) skips all the dimming.
 //
 //  EXAMPLE (hero at his desk in the evening, camera on the desk):
 //     const BR = V.env.BEDROOM, B = V.boy, S = BR.heroScale;
@@ -1195,6 +1196,11 @@
 
   // practical light sources that sit BEHIND actors (window glass, hallway, lamp bulb)
   function drawPracticals(ctx, o, d) {
+    // hot core of the LED's red spill: lights the nightstand / wall / pillow but sits BEHIND the
+    // actors, so someone standing in front of the clock is not lit "through" (the wide, faint
+    // part of the spill stays on top in drawGlows)
+    const cl = BR.clock;
+    V.lightPool(ctx, cl.x, cl.y - 30, 90, '#ff3a22', (0.12 + 0.3 * d) * 0.5);
     if (d < 0.05) return;
     // the LED clock keeps its own brightness in the dark (actors drawn later still occlude it)
     if (!(o.hide && o.hide.clock)) drawClockAt(ctx, o, 1);
@@ -1350,11 +1356,11 @@
       V.lightPool(ctx, hx, hy, 70, '#fff3c4', 0.6 * lamp);
       ctx.restore();
     }
-    // --- LED red spill (the clock itself is re-drawn bright in drawPracticals) ---
+    // --- LED red spill, wide faint part (the clock itself is re-drawn bright and the hot core
+    //     of the spill is added in drawPracticals, behind the actors) ---
     const cl = BR.clock;
     const spill = 0.12 + 0.3 * d;
     V.lightPool(ctx, cl.x, cl.y - 30, 230, '#ff3a22', spill * 0.55);
-    V.lightPool(ctx, cl.x, cl.y - 30, 90, '#ff3a22', spill * 0.5);
   }
 
   // ---------------------------------------------------------------- the one-call scene

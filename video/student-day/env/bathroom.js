@@ -23,7 +23,7 @@
 //   V.env.bathroom.toScreen(cam, x, y) -> [sx, sy]
 //   V.env.bathroom.curtain(ctx, o)    shower curtain + rod (draw AFTER the person in the shower;
 //                                     the person stands between the stall wall and the curtain).
-//                                     o = {t, alpha (default .86), sway 0..1, wet 0..1}
+//                                     o = {t, alpha (default .92), sway 0..1, wet 0..1}
 //   V.env.bathroom.water(ctx, o)      shower streams + splashes (world coords; call inside the cam)
 //                                     o = {t, on 0..1, hits:[{x,y,r}] circles that stop the water
 //                                     (head, shoulders), yEnd (floor of the streams), mud 0..1}
@@ -55,6 +55,9 @@
 //                                              ctx.rotate(ang) and +x points at the rig-local target
 //       kit.headFrame(ctx, x, y, s, pose)      apply the head frame to ctx (draw hair foam, mud, drops)
 //       kit.down(pose)                         world "down" expressed in the head frame (for drips)
+//       kit.wrap(deg, ref) / kit.wrapArm({sh,el}, ref)  unwrap an angle to within ±180 of ref —
+//                                              ik() returns sh in (-180-a, 180+a), so unwrap before
+//                                              blending two arm poses or the arm windmills
 //
 // ---------------------------------------------------------------- LAYOUT (world px)
 //   wall / floor line ............ y = 850 (baseboard 830..850); floor below, perspective tiles
@@ -1038,7 +1041,7 @@
     const t = o.t || 0;
     const x0 = L.STALL.x0 + 4, x1 = L.HALF_WALL.x0 - 2;
     const top = L.ROD_Y + 8, hem = L.HEM_Y;
-    const alpha = o.alpha === undefined ? 0.86 : o.alpha;
+    const alpha = o.alpha === undefined ? 0.92 : o.alpha;
     const sway = o.sway === undefined ? 1 : o.sway;
     const folds = 14;
     const fw = (x1 - x0) / folds;
@@ -1415,9 +1418,9 @@
       // single multiply pass: warm lamp light in the upper middle, falling off to dusky corners
       ctx.globalCompositeOperation = 'multiply';
       const g = ctx.createRadialGradient(V.W * 0.45, V.H * 0.25, V.H * 0.1, V.W * 0.5, V.H * 0.45, V.H * 1.05);
-      g.addColorStop(0, '#ffe2bf');
-      g.addColorStop(0.55, '#f6c79a');
-      g.addColorStop(1, '#a8785e');
+      g.addColorStop(0, '#fff0dc');
+      g.addColorStop(0.55, '#fad8b2');
+      g.addColorStop(1, '#bf9070');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, V.W, V.H);
     } else {
@@ -1485,6 +1488,15 @@
       const p = full(pose);
       const a = V.deg((p.rot || 0) + p.torso + p.head);
       return [Math.sin(a), Math.cos(a)];
+    },
+    // angle (deg) shifted by whole turns to lie within ±180 of ref. Use it on ik() results before
+    // blending two arm poses, so the blend takes the intended way round (no windmilling arms).
+    wrap(a, ref = 0) {
+      return a + 360 * Math.round((ref - a) / 360);
+    },
+    // {sh, el} with sh unwrapped near ref
+    wrapArm(arm, ref = 0) {
+      return { sh: kit.wrap(arm.sh, ref), el: arm.el };
     },
   };
 

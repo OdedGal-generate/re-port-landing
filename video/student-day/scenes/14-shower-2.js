@@ -69,10 +69,17 @@
     // far hand: scrubs the back of the head, then is thrown up for the finale
     const w = t * W2 * 2.6;
     const fT = K.headPt(pose, -30 + 12 * Math.cos(w), -56 + 9 * Math.sin(w));
-    let af = K.ik(pose, 'far', fT[0], fT[1], -1);
-    const shakeArm = V.ep(t, 2.6, 2.75);
-    af = { sh: V.lerp(af.sh, 200, shakeArm), el: V.lerp(af.el, -20, shakeArm) };
-    af = { sh: V.lerp(af.sh, 160, f), el: V.lerp(af.el, -8, f) };
+    // ik() wraps sh at ±180 (this arm sits at about -145 = 215): unwrap near 200 before blending,
+    // otherwise the arm windmills forward through a full turn on its way up
+    let af = K.wrapArm(K.ik(pose, 'far', fT[0], fT[1], -1), 200);
+    // head shake: the hand lets go of the hair and stays raised behind the head (steady, mostly
+    // hidden) ...
+    const shakeArm = V.ep(t, 2.6, 2.72);
+    af = { sh: V.lerp(af.sh, 205, shakeArm), el: V.lerp(af.el, -18, shakeArm) };
+    // ... then the finale fist is punched up and over to the FRONT (205 -> 146, ~60 deg), elbow
+    // bending the natural way, fist clear above his brow
+    const fp = V.ep(t, 3.05, 3.3, 'outBack');
+    af = { sh: V.lerp(af.sh, 146, fp), el: V.lerp(af.el, 26, V.ep(t, 3.05, 3.22)) };
     pose.armFar = af;
     const y = B.standY(L.SHOWER_Y, S, pose);
     return { x: HX, y, s: S, pose, beat, sh, f };
@@ -167,11 +174,13 @@
     if (t < 0.4) return;
     const m = K.headWorld(h.x, h.y, h.s, h.pose, 40, 10);
     const n = t > 3.1 ? 6 : 3;
+    // in the finale the fist is up in front of his brow: send the notes out sideways, under it
+    const f = h.f;
     for (let i = 0; i < n; i++) {
       const per = 1.4;
       const ph = ((t / per) + i / n) % 1;
-      const x = m[0] - 30 - ph * (130 + 40 * (i % 2)) + Math.sin(ph * 7 + i) * 14;
-      const y = m[1] - 20 - ph * 230;
+      const x = m[0] - 30 - ph * (V.lerp(130, 250, f) + 40 * (i % 2)) + Math.sin(ph * 7 + i) * 14;
+      const y = m[1] - 20 + 30 * f - ph * V.lerp(230, 120, f);
       const a = (ph < 0.15 ? ph / 0.15 : ph > 0.75 ? (1 - ph) / 0.25 : 1) * V.seg(t, 0.4, 0.8);
       const sz = (48 + (i % 3) * 10) * (0.75 + ph * 0.5) * (t > 3.1 ? 1.15 : 1);
       V.text(ctx, i % 2 ? '♫' : '♪', x, y, {
@@ -179,6 +188,24 @@
         color: ['#ffd56b', '#ffffff', '#ff9fc0'][i % 3], stroke: ink, strokeWidth: 5,
       });
     }
+  }
+
+  // the raised finale fist: chunky fist with knuckle creases (the far hand is otherwise a plain
+  // circle). Drawn over the rig only once the fist is up and clear of the head (t > 3.2).
+  function fist(ctx, t, h) {
+    const k = V.ep(t, 3.2, 3.32);
+    if (k <= 0) return;
+    const j = B.joints(h.x, h.y, h.s, h.pose);
+    ctx.save();
+    ctx.translate(j.farHand[0], j.farHand[1]);
+    ctx.scale(h.pose.facing * h.s, h.s);
+    ctx.rotate(V.deg(-10));
+    const w = V.lerp(24, 31, k), hh = V.lerp(24, 27, k);
+    const skin = B.HERO.skinShade;
+    V.fillRound(ctx, -w / 2, -hh / 2, w, hh, 11, skin, ink, 3.5);
+    ctx.globalAlpha = k;
+    for (let i = 0; i < 3; i++) V.line(ctx, w / 2 - 11, -7 + i * 7, w / 2 - 2, -7 + i * 7, ink, 2.5);
+    ctx.restore();
   }
 
   // water drops flung off by the head shake
@@ -208,7 +235,7 @@
     ],
     draw(ctx, t, info) {
       const T = Math.min(t, 4.45);
-      const up = V.ep(T, 0.5, 1.75, 'inOut');
+      const up = V.ep(T, 0.45, 1.8, 'sine'); // smooth tilt (cubic in-out whipped ~60 px/frame)
       const back = V.ep(T, 3.0, 4.2, 'sine');
       const cam = {
         x: V.lerp(585, 505, up) + 10 * back,
@@ -222,6 +249,7 @@
       BA.cam(ctx, cam);
       BA.drain(ctx, { t: T, mud: 1 - V.ep(T, 0.8, 3.4), x0: 400 });
       B.draw(ctx, h.x, h.y, h.s, h.pose);
+      fist(ctx, T, h);
       shinMud(ctx, T, h);
       drawMud(ctx, T, h);
       const fCol = V.mixColor('#ffffff', '#cfa978', mudHair(T) * 0.8);

@@ -23,10 +23,10 @@
   // ------------------------------------------------------------------ sneaking gait
   // [foot, liftTime, plantTime, fromX, toX, liftHeight]
   const STEPS = [
-    ['near', 0.55, 0.9, 362, 410, 74],
-    ['far', 1.0, 1.355, 335, 440, 78],
-    ['near', 1.46, 1.81, 410, 480, 74],
-    ['far', 1.92, 2.27, 440, 520, 70],
+    ['near', 0.55, 0.9, 362, 410, 100],
+    ['far', 1.0, 1.355, 335, 440, 118],
+    ['near', 1.46, 1.81, 410, 480, 118],
+    ['far', 1.92, 2.27, 440, 520, 108],
     ['near', 2.86, 3.05, 480, 640, 44],
     ['far', 3.02, 3.24, 520, 780, 46],
     ['near', 3.2, 3.44, 640, 920, 46],
@@ -53,6 +53,9 @@
     V.line(c, 0, -3, 22, -4, INK, 8 + 7);
     V.line(c, 0, -3, 22, -4, '#e9b48f', 8);
   };
+
+  // chest rise for the snore: up during the inhale (5.1-6.35), down on the whistled exhale
+  const breath = (t) => V.kf(t, [[5.0, 0], [5.1, 0], [6.35, 1], [6.5, 1], [7.5, -0.3], [8.6, 0.4]], 'sine');
 
   // ------------------------------------------------------------------ the hero
   function hero(t) {
@@ -129,8 +132,10 @@
       p2.legNear = { hip: lk('h', legsStand.n.hip, 52, 44, 2), knee: lk('k', legsStand.n.knee, -78, -36, -4), foot: lk('f', legsStand.n.foot, -10, -40, -62) };
       p2.legFar = { hip: lk('h', legsStand.f.hip, 46, 38, -2), knee: lk('k', legsStand.f.knee, -70, -30, -4), foot: lk('f', legsStand.f.foot, -10, -40, -58) };
       // arms fly up, flop down
-      p2.armNear = { sh: V.kf(t, [[3.95, 6], [4.12, 140], [4.3, 166], [4.6, 120]]), el: V.kf(t, [[3.95, 14], [4.12, 36], [4.3, 18], [4.6, 40]]) };
-      p2.armFar = { sh: V.kf(t, [[3.95, -4], [4.12, 120], [4.3, 150], [4.6, 100]]), el: V.kf(t, [[3.95, 16], [4.12, 40], [4.3, 24], [4.6, 40]]) };
+      // near arm flails up at the ceiling, then flops down onto his belly (never across his
+      // face); the far arm is flung back over his head onto the pillow (drawn behind the head)
+      p2.armNear = { sh: V.kf(t, [[3.95, 6], [4.1, 96], [4.24, 104], [4.42, 30], [4.6, 34]]), el: V.kf(t, [[3.95, 14], [4.1, 30], [4.24, 20], [4.42, 40], [4.6, 36]]) };
+      p2.armFar = { sh: V.kf(t, [[3.95, -4], [4.1, 100], [4.24, 140], [4.42, 158], [4.6, 150]]), el: V.kf(t, [[3.95, 16], [4.1, 40], [4.24, 30], [4.42, 24], [4.6, 30]]) };
       p2.head = V.kf(t, [[3.95, 12], [4.12, -16], [PLOP, 34], [4.34, 20], [4.5, 24]]);
       p2.torso = 6;
       p2.eyes = 'closed';
@@ -153,8 +158,8 @@
         const hy = V.kf(t, [[4.6, 640], [4.82, 720]]);
         const reachIK = IK.arm(Object.assign({}, p2), x, y, S, 'near', [hx, hy]).armNear;
         const FOLD = { sh: -25, el: 158 };
-        p2.armNear = lerpArm(lerpArm({ sh: 120, el: 40 }, reachIK, V.ep(t, 4.6, 4.74)), FOLD, V.ep(t, 4.86, 5.1));
-        p2.armFar = lerpArm({ sh: 100, el: 40 }, { sh: -12, el: 16 }, V.ep(t, 4.6, 4.9));
+        p2.armNear = lerpArm(lerpArm({ sh: 34, el: 36 }, reachIK, V.ep(t, 4.6, 4.74)), FOLD, V.ep(t, 4.86, 5.1));
+        p2.armFar = lerpArm({ sh: 150, el: 30 }, { sh: -12, el: 16 }, V.ep(t, 4.6, 4.9));
         p2.eyes = 'closed';
         p2.mouth = t < 5.08 ? 'neutral' : 'smile';
         p2.brows = 0;
@@ -162,11 +167,11 @@
         if (t >= 4.84) blanketEdge = B.joints(x, y, S, p2).nearHand[0] + 8;
         heap = 0.85 * (1 - V.ease.out(grab));
         if (t >= 5.08) {
-          // asleep: breathing + snoring
-          const ph = ((t - 5.0) / 1.7) % 1;
+          // asleep: the mouth follows the snore sound (snore cue at 5.0 -> rattling inhale
+          // 5.1-6.35, whistling exhale 6.5-7.5), then a contented sleepy smile for the last shot
           p2.eyes = 'sleep';
-          p2.mouth = t < 5.5 ? 'smile' : ph > 0.45 && ph < 0.85 ? 'o' : 'neutral';
-          p2.head = 24 + Math.sin(ph * Math.PI * 2) * 1.5;
+          p2.mouth = t < 5.3 ? 'smile' : t < 6.4 ? 'open' : t < 7.5 ? 'o' : t < 7.7 ? 'neutral' : 'smile';
+          p2.head = 24 + 1.5 * breath(t);
         }
       }
       return { x, y, pose: p2, bedSquash, blanketEdge, heap, pillowDent, fallK };
@@ -208,7 +213,7 @@
       };
       const j = B.joints(h.x, h.y, S, h.pose);
       const inBed = t >= FRONT_UNTIL;
-      const breathe = t > 5.08 ? 4 * Math.sin(((t - 5.0) / 1.7) * Math.PI * 2) : 0;
+      const breathe = t > 5.08 ? 6 * breath(t) : 0;
       // the blanket only shapes itself over his legs once they have dropped onto the mattress
       const settle = V.ep(t, 4.4, 4.56);
       const lumps = inBed ? V.env.bedroomLumps(j, breathe).map(([lx, lh]) => [lx, 12 + (lh - 12) * settle]) : null;
@@ -218,7 +223,10 @@
           // visible only through the door gap; the right jamb reveals him as he steps forward
           const g = V.env.bedroomParts.doorGeom(open);
           const x0 = g.xf + 10 * g.sn;
-          const x1 = BR.door.x1 + Math.max(0, (h.x - 357) * 3.2);
+          // right edge = the door jamb while he is still in the hallway; it sweeps away within
+          // ~3 frames (0.7-0.8) as he leans through the gap, so his head appears in one go
+          // instead of being cut in half for several frames
+          const x1 = BR.door.x1 + 4 + 900 * V.ep(t, 0.7, 0.8, 'inOut');
           c.save();
           c.beginPath();
           c.rect(x0, -2000, Math.max(0, x1 - x0), 6000);

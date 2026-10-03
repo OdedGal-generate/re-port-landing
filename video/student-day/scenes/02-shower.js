@@ -65,41 +65,63 @@
     const fT = [-34 + 12 * Math.cos(w + Math.PI), -52 + 8 * Math.sin(w + Math.PI)];
     const nL = K.headPt(pose, nT[0], nT[1]);
     const fL = K.headPt(pose, fT[0], fT[1]);
-    let an = K.ik(pose, 'near', nL[0], nL[1], -1);
-    let af = K.ik(pose, 'far', fL[0], fL[1], -1);
-    // swing down BEHIND the body (go the long way round: +360)
-    const down = V.ep(t, 2.8, 3.3);
-    an = mixArm(an, { sh: REST_N.sh + 360, el: REST_N.el }, down);
-    af = mixArm(af, { sh: REST_F.sh + 360, el: REST_F.el }, down);
+    // ik() wraps sh at ±180: unwrap both arms near "up and a bit back" (200) so the swing below
+    // always goes backwards by < 180 deg (the far arm used to windmill through a full circle)
+    let an = K.wrapArm(K.ik(pose, 'near', nL[0], nL[1], -1), 200);
+    let af = K.wrapArm(K.ik(pose, 'far', fL[0], fL[1], -1), 200);
+    // swing down BEHIND the body (rest + 360 = the backward way round); elbows relax first
+    const down = V.ep(t, 2.8, 3.3), relax = V.ep(t, 2.8, 3.08);
+    const swing = (a, r) => ({ sh: V.lerp(a.sh, r.sh + 360, down), el: V.lerp(a.el, r.el, relax) });
+    an = swing(an, REST_N);
+    af = swing(af, REST_F);
+    let thumbK = 0;
     if (t >= 4.3) {
-      // wipe the face: hand up to the forehead, down over the face, then a thumbs-up
+      // wipe the face: hand up to the forehead, down over the face, then a thumbs-up held forward
       const pF = K.headPt(pose, 44, -34), pC = K.headPt(pose, 46, 34);
-      const brow = K.ik(pose, 'near', pF[0], pF[1], 1), chin = K.ik(pose, 'near', pC[0], pC[1], 1);
-      const thumb = K.ik(pose, 'near', 74, -168, 1);
+      const brow = K.wrapArm(K.ik(pose, 'near', pF[0], pF[1], 1), 90);
+      const chin = K.wrapArm(K.ik(pose, 'near', pC[0], pC[1], 1), 90);
+      const j0 = B.fk(K.full(pose));
+      const thumb = K.wrapArm(K.ik(pose, 'near', j0.armNear.s[0] + 118, j0.armNear.s[1] - 10, 1), 90);
       an = REST_N;
       an = mixArm(an, brow, V.ep(t, 4.3, 4.44));
       an = mixArm(an, chin, V.ep(t, 4.44, 4.6));
       an = mixArm(an, thumb, V.ep(t, 4.6, 4.86, 'outBack'));
-      if (t > 4.7) pose.propNear = thumbUp(pose, an, V.ep(t, 4.7, 4.82, 'outBack'));
+      thumbK = V.ep(t, 4.66, 4.8, 'outBack');
     }
     pose.armNear = an;
     pose.armFar = af;
     const y = B.standY(L.SHOWER_Y, S, pose);
-    return { x: HX + 24 * V.ep(t, 2.85, 3.35) - 40 * V.ep(t, 4.45, 4.9), y, s: S, pose, scrub, up, done };
+    return { x: HX + 24 * V.ep(t, 2.85, 3.35) - 40 * V.ep(t, 4.45, 4.9), y, s: S, pose, scrub, up, done, thumbK };
   }
 
-  // thumb sticking straight up out of the fist (prop frame: +x along the forearm)
-  function thumbUp(pose, arm, k) {
-    const fa = (pose.torso || 0) + arm.sh + arm.el;
-    const rot = -Math.PI / 2 - (Math.PI / 2 - V.deg(fa));
-    return (ctx) => {
+  // thumbs-up fist, drawn in world space ON TOP of the water so it reads clearly:
+  // a chunky fist (finger creases toward the camera) with the thumb popping up (k 0..1)
+  function thumbUp(ctx, h) {
+    const k = h.thumbK;
+    if (k <= 0) return;
+    const j = B.joints(h.x, h.y, h.s, h.pose);
+    const skin = B.HERO.skin;
+    const g = V.clamp(k * 1.6); // fist grows from the plain round hand
+    ctx.save();
+    ctx.translate(j.nearHand[0], j.nearHand[1]);
+    ctx.scale(h.s, h.s);
+    ctx.lineJoin = 'round';
+    // thumb (behind the fist top, pops up)
+    if (k > 0.05) {
       ctx.save();
-      ctx.rotate(rot);
-      ctx.scale(k, k);
-      V.fillRound(ctx, 2, -6, 30, 13, 6.5, B.HERO.skin, ink, 3.5);
-      V.circle(ctx, 2, 0.5, 7, B.HERO.skin);
+      ctx.translate(-3, -9);
+      ctx.rotate(-0.12);
+      ctx.scale(1, k);
+      V.fillRound(ctx, -7, -26, 14, 30, 7, skin, ink, 3.5);
+      V.line(ctx, -2, -20, 3, -20, 'rgba(200,120,90,0.55)', 2.5); // nail
       ctx.restore();
-    };
+    }
+    // fist
+    const w = V.lerp(24, 32, g), hh = V.lerp(24, 27, g);
+    V.fillRound(ctx, -w / 2, -hh / 2, w, hh, 11, skin, ink, 3.5);
+    ctx.globalAlpha = g;
+    for (let i = 0; i < 3; i++) V.line(ctx, w / 2 - 11, -6 + i * 7, w / 2 - 2, -6 + i * 7, ink, 2.5);
+    ctx.restore();
   }
 
   function foamBlobs(t, h) {
@@ -189,6 +211,7 @@
         ].concat(T > 4.3 ? [{ x: j.nearHand[0] + 4, y: j.nearHand[1] - 10 * S, r: 24 * S }] : []),
       });
       BA.curtain(ctx, { t: T, wet: 0.7 });
+      thumbUp(ctx, h);
       bubbles(ctx, T, h);
       BA.steam(ctx, { t: T, amount: 0.55 + 0.45 * V.seg(T, 0, 3), y: 600, rise: 620 });
       // "clean!" sparkles on the hair

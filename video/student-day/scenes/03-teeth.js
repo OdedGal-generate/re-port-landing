@@ -16,6 +16,9 @@
   const HAND_REST = [1252, 640]; // where the brush gets laid down on the counter
   const FAR_HAND = [1222, 646]; // far hand leans on the counter edge
   const SPOUT = [L.SPOUT.x, L.SPOUT.y + 42];
+  const T_REACH = [3.7, 3.8]; // hand to the sensor faucet (after the spit lands at ~3.73)
+  const T_SCOOP = [3.84, 3.93]; // cupped water up to the mouth (splash sfx 3.9)
+  const T_TAP = [3.73, 3.77, 3.9, 3.95]; // faucet on / off
 
   const lerp2 = (a, b, k) => [V.lerp(a[0], b[0], k), V.lerp(a[1], b[1], k)];
 
@@ -69,9 +72,11 @@
       tgt = lerp2(ready, atMouth, V.ep(t, 0.0, 0.32, 'outBack'));
     } else {
       const lastMouth = K.headPt(pose, 52, 12);
+      // brush down -> (spit, hand stays on the counter) -> hand under the faucet -> water to the
+      // mouth -> back to the counter. The hand only leaves after the spit has landed (3.73).
       tgt = lerp2(lastMouth, W(HAND_REST), V.ep(t, 3.35, 3.5));
-      tgt = lerp2(tgt, W([SPOUT[0] - 4, SPOUT[1] - 2]), V.ep(t, 3.58, 3.7));
-      tgt = lerp2(tgt, K.headPt(pose, 40, 36), V.ep(t, 3.8, 3.9));
+      tgt = lerp2(tgt, W([SPOUT[0] - 4, SPOUT[1] - 2]), V.ep(t, T_REACH[0], T_REACH[1]));
+      tgt = lerp2(tgt, K.headPt(pose, 40, 36), V.ep(t, T_SCOOP[0], T_SCOOP[1]));
       tgt = lerp2(tgt, W([HAND_REST[0] + 10, HAND_REST[1] + 4]), V.ep(t, 4.0, 4.3));
     }
     pose.armNear = K.ik(pose, 'near', tgt[0], tgt[1], 1);
@@ -167,14 +172,17 @@
         ctx.globalAlpha = 1;
       }
     }
-    // sparkling clean teeth
-    const m = K.headWorld(h.x, h.y, h.s, h.pose, 30, 22);
+    // sparkling clean teeth: the "ting" sits on the front corner of the grin (head frame), so it
+    // reads as the TEETH shining, not the nose
+    const m1 = K.headWorld(h.x, h.y, h.s, h.pose, 47, 16);
     const a = V.ep(t, 4.3, 4.46, 'outBack') * (1 - V.ep(t, 5.1, 5.4));
-    BA.sparkle(ctx, m[0] + 30, m[1] - 18, 30 * a, 0.3 + t * 1.5, 1);
+    BA.sparkle(ctx, m1[0], m1[1], 25 * a, 0.3 + t * 1.5, 1);
+    const m2 = K.headWorld(h.x, h.y, h.s, h.pose, 66, 34);
     const a2 = V.ep(t, 4.42, 4.58, 'outBack') * (1 - V.ep(t, 5.0, 5.3));
-    BA.sparkle(ctx, m[0] + 52, m[1] + 6, 14 * a2, -t * 2, 1);
+    BA.sparkle(ctx, m2[0], m2[1], 14 * a2, -t * 2, 1);
+    const m3 = K.headWorld(h.x, h.y, h.s, h.pose, 62, 6);
     const a3 = V.ep(t, 4.52, 4.66, 'outBack') * (1 - V.ep(t, 4.95, 5.2));
-    BA.sparkle(ctx, m[0] + 14, m[1] - 40, 11 * a3, t * 2.5, 1);
+    BA.sparkle(ctx, m3[0], m3[1], 11 * a3, t * 2.5, 1);
   }
 
   // spit glob arcing into the basin, splat, water splash
@@ -197,12 +205,13 @@
         }
       }
     }
-    // water hitting his hand under the faucet
-    if (t > 3.68 && t < 3.86) {
+    // water hitting his hand under the faucet (drops fall back into the bowl, never below its rim)
+    if (t > T_TAP[1] && t < T_TAP[2] + 0.02) {
       for (let i = 0; i < 8; i++) {
         const ph = ((t * 6) + V.rand(i * 3.1)) % 1;
         const a = -Math.PI * (0.15 + 0.7 * V.rand(i * 7.7));
         const x = SPOUT[0] + Math.cos(a) * 70 * ph, y = SPOUT[1] - 12 + Math.sin(a) * 50 * ph + 140 * ph * ph;
+        if (y > L.BASIN.rim + 6) continue;
         V.ellipse(ctx, x, y, 3, 4, 'rgba(110,185,235,0.95)');
       }
     }
@@ -275,7 +284,7 @@
         fog: 0.8,
         wipe: { x: 1525, y: 505, rx: 150, ry: 190, rot: 0.1 },
         brushInCup: false,
-        faucet: V.ep(T, 3.66, 3.7) * (1 - V.ep(T, 3.84, 3.9)),
+        faucet: V.ep(T, T_TAP[0], T_TAP[1]) * (1 - V.ep(T, T_TAP[2], T_TAP[3])),
         mirror: MIR,
         reflect: (c) => drawHero(c, T, h),
       });

@@ -156,12 +156,31 @@
     ctx.drawImage(lc, 0, 0, V.W, V.H);
     ctx.restore();
 
-    // 2) crisp nightstand + clock + arm
+    // 2) crisp nightstand + clock
     ctx.save();
     V.env.bedroomCam(ctx, cam);
     V.env.bedroomDimLayer(ctx, 0.14, (c) => PARTS.drawNightstand(c));
     const glowPulse = 1 + 0.5 * Math.exp(-Math.max(0, t - 1.0) * 7) * (t >= 1 ? 1 : 0);
     PARTS.drawClockAt(ctx, oo, glowPulse);
+    ctx.restore();
+
+    // 3) film title over the dark shot. Drawn BEHIND the groping arm so the hand that rises
+    //    through it at the wind-up covers the letters instead of showing through them.
+    const ta = Math.min(V.ep(t, 0.3, 0.75, 'out'), 1 - V.ep(t, 2.05, 2.45, 'inOut'));
+    if (ta > 0) {
+      const sc = 1 + 0.035 * V.seg(t, 0, 3);
+      ctx.save();
+      ctx.translate(V.W / 2, 205);
+      ctx.scale(sc, sc);
+      V.text(ctx, 'יום בחיים', 0, -18, { size: 132, weight: 900, color: '#fff6ea', alpha: ta, shadow: 'rgba(255,50,30,0.85)', shadowBlur: 34 });
+      V.line(ctx, -230, 66, 230, 66, V.rgba('#ff3a22', 0.75 * ta), 3);
+      V.text(ctx, 'של נער בן 15', 0, 108, { size: 54, weight: 500, color: '#ffd7a8', alpha: ta, shadow: 'rgba(0,0,0,0.8)', shadowBlur: 12 });
+      ctx.restore();
+    }
+
+    // 4) the arm, LED spill and impact marks in front of the title
+    ctx.save();
+    V.env.bedroomCam(ctx, cam);
     if (t > ARM.t[0]) {
       const a = armAt(t);
       const w = a.w.slice();
@@ -191,18 +210,6 @@
     }
     ctx.restore();
 
-    // 3) title over the dark shot
-    const ta = Math.min(V.ep(t, 0.3, 0.75, 'out'), 1 - V.ep(t, 2.02, 2.42, 'inOut'));
-    if (ta > 0) {
-      const sc = 1 + 0.035 * V.seg(t, 0, 3);
-      ctx.save();
-      ctx.translate(V.W / 2, 205);
-      ctx.scale(sc, sc);
-      V.text(ctx, 'יום בחיים', 0, -18, { size: 132, weight: 900, color: '#fff6ea', alpha: ta, shadow: 'rgba(255,50,30,0.85)', shadowBlur: 34 });
-      V.line(ctx, -230, 66, 230, 66, V.rgba('#ff3a22', 0.75 * ta), 3);
-      V.text(ctx, 'של נער בן 15', 0, 108, { size: 54, weight: 500, color: '#ffd7a8', alpha: ta, shadow: 'rgba(0,0,0,0.8)', shadowBlur: 12 });
-      ctx.restore();
-    }
   }
 
   // ------------------------------------------------------------------ shot 2 (hero in bed)
@@ -210,6 +217,13 @@
   const LIE = BR.bed.lie, SIT = BR.bed.sit;
   const FOOT_N = [1158, BR.floorY - 11 * S], FOOT_F = [1140, BR.floorY - 11 * S];
   const STAND_Y = B.standY(BR.floorY, S, P.stand()) + 3;
+
+  // far arm from the end of the stretch to the end: it grabs the blanket at his hip (6.36) and
+  // flings it off toward the foot of the bed (6.44-6.6), then helps him push up to stand
+  const FAR_LATE = (t) => ({
+    sh: V.kf(t, [[6.0, 28], [6.34, 44], [6.56, 98], [6.8, 40], [7.0, 26], [7.2, 46], [7.6, 6]]),
+    el: V.kf(t, [[6.0, 40], [6.34, 12], [6.56, 26], [6.8, 40], [7.2, 34], [7.6, 16]]),
+  });
 
   function hero(t) {
     const pose = P.lie({ outfit: 'pajamas', facing: 1, head: 24, torso: 6 });
@@ -263,29 +277,32 @@
     } else if (t < 6.05) {
       // the big stretch
       const tr = V.osc(t, 9) * 2.5 * V.seg(t, 5.0, 5.15) * (1 - V.seg(t, 5.55, 5.7));
+      // arms spread in a wide "V": the near arm up and FORWARD (clear of his yawning face), the
+      // far arm up and BACK behind his head, so both arms read at once in the 3/4 view
       pose.armNear = {
-        sh: V.kf(t, [[4.62, 34], [4.98, 170], [5.6, 176], [6.0, 34]]) + tr,
-        el: V.kf(t, [[4.62, 36], [4.98, 14], [5.6, 6], [6.0, 36]]),
+        sh: V.kf(t, [[4.62, 34], [4.98, 142], [5.6, 148], [6.0, 34]]) + tr,
+        el: V.kf(t, [[4.62, 36], [4.98, 12], [5.6, 4], [6.0, 36]]),
       };
       pose.armFar = {
-        sh: V.kf(t, [[4.66, 28], [5.02, 160], [5.62, 168], [6.0, 28]]) - tr,
-        el: V.kf(t, [[4.66, 40], [5.02, 22], [5.62, 12], [6.0, 40]]),
+        sh: V.kf(t, [[4.66, 28], [5.02, 214], [5.62, 222], [6.0, 28]]) - tr,
+        el: V.kf(t, [[4.66, 40], [5.02, 8], [5.62, 2], [6.0, 40]]),
       };
       pose.torso += V.kf(t, [[4.62, 0], [5.0, -10], [5.6, -13], [6.0, 0]]);
       pose.head += V.kf(t, [[4.62, 0], [5.0, -16], [5.6, -18], [6.0, 2]]);
     } else if (t < 6.62) {
-      // scratching the messy hair
+      // scratching the messy hair at the back of his head: elbow up and BACK (IK flip) so the
+      // arm covers the hair, not his face; the head nods forward into the scratch
+      pose.head += 8 * V.ep(t, 6.02, 6.2) * (1 - V.ep(t, 6.46, 6.62));
       const j0 = B.joints(x, y, S, pose);
-      const sx = V.osc(t, 7) * 9;
-      const tgt = [j0.head[0] - 6 + sx, j0.head[1] - 50];
-      const ik = IK.arm(Object.assign({}, pose), x, y, S, 'near', tgt).armNear;
+      const sx = V.osc(t, 7) * 7;
+      const tgt = [j0.head[0] - 18 * S + sx, j0.head[1] - 40 * S + sx * 0.4];
+      const ik = IK.arm(Object.assign({}, pose), x, y, S, 'near', tgt, true).armNear;
       const k = V.ep(t, 6.02, 6.2) * (1 - V.ep(t, 6.46, 6.62));
       pose.armNear = lerpArm(rest, ik, k);
-      pose.armFar = restF;
-      pose.head += 8 * k;
+      pose.armFar = FAR_LATE(t);
     } else {
       pose.armNear = { sh: V.kf(t, [[6.62, 34], [6.75, 64], [6.95, 40], [7.2, 52], [7.6, 10]]), el: V.kf(t, [[6.62, 36], [6.75, 10], [7.0, 30], [7.6, 14]]) };
-      pose.armFar = { sh: V.kf(t, [[6.62, 28], [7.0, 26], [7.2, 46], [7.6, 6]]), el: V.kf(t, [[6.62, 40], [7.2, 34], [7.6, 16]]) };
+      pose.armFar = FAR_LATE(t);
     }
 
     // swing the legs out (6.62–7.0) then stand up (7.0–7.62) with the feet planted
@@ -333,7 +350,7 @@
     const edgeLie = j.shoulder[0] + 12;
     let edge = V.lerp(LIE.x - 136, SIT.x - 8, V.clamp(h.up));
     if (h.up <= 0) edge = edgeLie;
-    const throwK = V.ep(t, 6.48, 6.76, 'out');
+    const throwK = V.ep(t, 6.42, 6.66, 'out'); // flung off by his far hand (FAR_LATE)
     edge = V.lerp(edge, 1196, throwK);
     const breathe = t < 3.62 ? 3 * Math.sin(t * 3) : 0;
     let lumps = V.env.bedroomLumps(j, breathe);
@@ -392,6 +409,7 @@
       { t: 1.1, type: 'alarm', dur: 1.25 },
       { t: SLAM, type: 'slap' },
       { t: 3.0, type: 'birds', dur: 5.4, vol: 0.6 },
+      { t: 6.42, type: 'whoosh', dur: 0.3, vol: 0.3, dir: 1 }, // blanket flung off
     ],
     stampTime: (t) => (t < 1.0 ? '07:29' : '07:30'),
     draw(ctx, t) {
